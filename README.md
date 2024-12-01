@@ -1,50 +1,37 @@
-# React + TypeScript + Vite
+# Dyvontrae Johnson
+## Community Tech Leader & Social Impact Developer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Building technology that empowers communities in San Antonio 🏘️
 
-Currently, two official plugins are available:
+## This should be a portfolio of what I've and what I'm doing
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Housing first, people over profit always. 🏘️
 
-## Expanding the ESLint configuration
+### What I Do
+- Develop solutions for housing justice and community organizing
+- Create tech tools for parent engagement and education advocacy
+- Build applications that bridge community needs with technology
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Current Projects
+- Tenant Rights Tracking System (Rust)
+- Community Organizing Dashboard
+- Education Advocacy Platform
 
-- Configure the top-level `parserOptions` property like this:
+### Technical Skills
+- Languages: Ruby, Rust (learning)
+- Tools: PowerShell, Web Development
+- Systems: Windows/Mac OS Administration
+- Certifications: CompTIA (IT Fundamentals, Network+, Security+, A+)
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Notable Work
+- Led development of community organizing platforms
+- Created first tokusatsu film festival tech infrastructure
+- Developed parent engagement tools for education advocacy
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Connect
+- [Portfolio](https://dyvontrae.github.io)
+- [LinkedIn](/in/dyvontrae-johnson/)
+- [Email](mailto:DYVONTRAE@GMAIL.COM)
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+---
+*"Building resilient communities through technology and social change"*
