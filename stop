@@ -1,0 +1,355 @@
+[33mcommit 3555c557158eba624e08f98b1d3cade52d6a2326[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mworking-portfolio[m[33m)[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sun Dec 1 14:48:22 2024 -0600
+
+    Change from localhost
+    
+    All configuration was mapped to localhost, now addressed to repository
+
+[33mcommit df0f6385dd6b656eaaabbf3f75edc6817aac6e03[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sun Dec 1 14:36:08 2024 -0600
+
+    Update portfolio with fixed layout and Supabase integration again.
+
+[33mcommit 3f74fb1efe3a2cc278a6eb07ad237e91124adae6[m[33m ([m[1;31morigin/working-portfolio[m[33m)[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sun Dec 1 14:25:37 2024 -0600
+
+    Update of Vite and Supabase Key
+    
+    API Key information and vite configuration file updated.
+
+[33mcommit 43cb6c88b603bce3353584c482e41d31aa16604d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sun Dec 1 14:07:41 2024 -0600
+
+    Update portfolio with fixed layout and Supabase integration
+
+[33mcommit 0418366c8f59b6953aeecb40760648e2571eff17[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 20:45:01 2024 -0600
+
+    Deployment Success
+    
+    Deployed JSON packages correctly on local build, caused a huge headache. Now works with correct packages.
+
+[33mcommit ca9fe7cf03448c0c015062ded048e1c0ec0190eb[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 20:26:22 2024 -0600
+
+    Vite.config Update
+    
+    Updating Vite Configuration file to remedy bug.
+
+[33mcommit c4133012861060de0958a299f6456c00027a9b89[m
+Merge: 9a7d7ade f80c9cb2
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 20:23:16 2024 -0600
+
+    Merge branch 'main' of https://github.com/Dyvontrae/dyvontrae.github.io
+
+[33mcommit 9a7d7ade107e5873678c536d7d739f4c35343295[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 20:21:41 2024 -0600
+
+    Deployment of New Portfolio Components
+    
+    Update to JSX and React components on portfolio.
+
+[33mcommit f80c9cb279ed7a0ee95ce43aae041b2d1eb52bb9[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 20:03:55 2024 -0600
+
+    Update README.md
+
+[33mcommit ad6882cc0e01b669e59ae6d82b9287c950e31aa8[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 19:59:15 2024 -0600
+
+    Redesigned Portfolio
+    
+    Maiden deployment of JSX Portfolio idea.
+
+[33mcommit 169270ca8210a836e7d66015213a22be29ac6b73[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 18:39:35 2024 -0600
+
+    Further reimplementation of CSS
+    
+    Two other missing CSS links added to portfolio; redesign imminent.
+
+[33mcommit d53df1d36589b7b98198771b9ae8f350991e10b1[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 18:36:31 2024 -0600
+
+    Updated Missing CSS
+    
+    possible missing style sheets fixed, rebuild of entire portfolio imminent.
+
+[33mcommit d3bc16234700c79da5ad0cd374c96d5a022e4a8c[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 18:29:58 2024 -0600
+
+    Reformat of Index.html
+    
+    Contact form implementation testing had me overwrite all other functionality of the main page. Reinserted segments.
+
+[33mcommit 09b053fd514df073b8376b55f0575927cb4b2112[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Nov 30 18:03:22 2024 -0600
+
+    Portfolio Optimizations
+    
+    /assets
+      /css
+        - custom.css (separate from template)
+      /js
+        - app.js (only needed functions)
+      /img
+        - optimized images
+    /components
+      - header.html
+      - portfolio.html
+      - skills.html
+    index.html
+    
+    Reducing bloat of many files and changing the HTML index file to use lazy load and optimized blocks
+
+[33mcommit 52484bb37d4d85c320430cba9b80e799d3167a20[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Apr 23 05:58:36 2022 -0500
+
+    Update index.html
+    
+    Further link cleanup
+
+[33mcommit c5f80760eefc756bbc47992bd80af4345afb656a[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Sat Apr 23 05:46:04 2022 -0500
+
+    Link Clean Up
+    
+    Most links pointing to portfolio-single-gallery.html removed until it is conformed or redesigned. Trying to stay with onepage design.
+
+[33mcommit 09b218cb1a0a72fa67ec313a02ce629c55718a8c[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Fri Apr 22 12:46:47 2022 -0500
+
+    Update README.md
+    
+    Actually created a Readme.
+
+[33mcommit 2ba7a8c0ddfc76cf820824b84a15646a554b5e65[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Fri Apr 22 12:43:13 2022 -0500
+
+    Update index.html
+    
+    Correction of resume links.
+
+[33mcommit cf31d2444dc40318cfe1894285eab6f5028ffa49[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Fri Apr 22 12:36:51 2022 -0500
+
+    Launch; creating maintenance page
+    
+    Launching first version of portfolio; created maintenance version to fallback on during development.
+
+[33mcommit d325ff0b16e61ea00eacf635bf35edcac72ddbb0[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Fri Apr 22 12:32:46 2022 -0500
+
+    Daily update; image entries
+    
+    Added images for gallery, defined areas of previous works, began trimming unworking functionality.
+
+[33mcommit 8187915b9bfc7a51573b5b779c9df94820ed8f2f[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 21:09:12 2022 -0500
+
+    End of the day update
+    
+    From code overhaul on the porfolio page, to updating the lightbox system; this commit has it all. Added image assets as well.
+
+[33mcommit 4574f29c0824c9c6a4f4116dc16427db4744eadd[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 13:48:52 2022 -0500
+
+    Update footers
+    
+    Update LinkedIn URL
+
+[33mcommit fa3a323bb6aff7cd1f0fbb66cfffe4acea88bbbb[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 13:40:54 2022 -0500
+
+    Remove Recent Posts
+    
+    Removing sidebar segment with recent posts
+
+[33mcommit 335dc236031cd90965b94308c3a9470499be38a9[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 13:18:00 2022 -0500
+
+    Update index-dev.html
+    
+    Implementing Instagram embed.
+
+[33mcommit 153684ecdbae307db89984f9a7007c2827e989e4[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 13:14:21 2022 -0500
+
+    Uploading of personal works
+    
+    Updating of personal works, alongside update of footer.
+
+[33mcommit 48765a5ffee2e94fcfd26d5c76b55caf9a5536c9[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 10:41:08 2022 -0500
+
+    Update index-dev.html
+    
+    Update of Portfolio copy
+
+[33mcommit 21ba0c3e86adceb16c32686b9e4916be0a171f14[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 08:38:17 2022 -0500
+
+    Update of Slider Link
+    
+    Implementation of slider link to YouTube channel.
+
+[33mcommit f27d54bf7b319329bbe1c5c94b0e94c22c52beeb[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 08:32:13 2022 -0500
+
+    Update logo@2x.png
+    
+    Changed to my personal logo
+
+[33mcommit 09eefa5dcc8ef0d95bff9b31b242b86813147e30[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 04:08:30 2022 -0500
+
+    Update index.html
+    
+    Changed problem segment.
+
+[33mcommit faaa85f95450a7a0625b3a57d82ac0367ad38a88[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 04:07:07 2022 -0500
+
+    Update index.html
+    
+    Implementation of lightbox on resume link.
+
+[33mcommit bea87b1e59b4f14e788dc5dbbb5d0f0892b75f24[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 04:01:58 2022 -0500
+
+    Update index-dev.html
+    
+    Changing link for icon on hover.
+
+[33mcommit 11af07ae4afc76857610f3a279dc6aee32757ceb[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 03:58:20 2022 -0500
+
+    Update index.html
+    
+    Final update of landing page featuring relevant landing page information and link to my resume
+
+[33mcommit 69382f948c1c025e3ce69bd33b84a4c5226d3619[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 03:45:30 2022 -0500
+
+    Update index.html
+    
+    Updating footer for landing page.
+
+[33mcommit 8f505771985a5c77466c77787cf62a6d0e54c829[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 03:34:11 2022 -0500
+
+    Update index.html
+    
+    Update of footer information
+
+[33mcommit c16541e8e9743bd200f1e64b8417a2d4b4735209[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 03:29:27 2022 -0500
+
+    Soft test of link overlay
+    
+    Testing overlay of Youtube icons
+
+[33mcommit 2c982aae36cfef4e63d32daa14af22f5cb008c23[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 03:18:22 2022 -0500
+
+    Added Resume
+    
+    Added Resume/CV area on site.
+
+[33mcommit 484ef70b2d26a5337887f5884ab8d33ad7277b5d[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 01:33:01 2022 -0500
+
+    Update index.html
+    
+    Business inquiry update on maintenance page.
+
+[33mcommit fa1707257bc4676414f1075083cbbe62000e78e4[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 01:19:36 2022 -0500
+
+    Updated Image Assets
+    
+    Updated image assets to reflect my logo on web page.
+
+[33mcommit 55b2227b368a8d52800320dd976ce322aac1028a[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 00:43:48 2022 -0500
+
+    Changing Elements of Portfolio Page
+    
+    Beginning the design and implementation of the landing page of the portfolio.
+
+[33mcommit e974b0ec15524972540dcffa466ebb1f904ec7a2[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Thu Apr 21 00:37:26 2022 -0500
+
+    Create .gitignore
+    
+    Listed a file from previous project on the gitignore list.
+
+[33mcommit 22e96507a70d4b5929d0b7243c34aab7dfc0a226[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Wed Apr 20 20:35:10 2022 -0500
+
+    Changing Landing Page
+    
+    Updating pages that will be applied to personal portfolio; will implement correct copy next commit. Published site under maintenance page.
+
+[33mcommit 92e2ad0827acd78d17565ac2ad182d417b30e91c[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Wed Apr 20 19:28:23 2022 -0500
+
+    Cleaning up of directory files
+    
+    Separation of projects. Cleaning up of directory files.
+
+[33mcommit e0a958d8361dde681ecff1a0cf275eb262d32d5a[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Wed Apr 20 18:58:27 2022 -0500
+
+    Initial Push from Local
+    
+    Initial push for portfolio.
+
+[33mcommit c1059dd82449749e8c41c71fe5fcda6c92272f04[m
+Author: Dyvontrae <103144736+Dyvontrae@users.noreply.github.com>
+Date:   Wed Apr 20 18:48:06 2022 -0500
+
+    Initial commit
