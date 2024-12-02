@@ -55,7 +55,8 @@ export const subItemApi = {
     const { data, error } = await supabase
       .from('sub_items')
       .select('*')
-      .eq('section_id', sectionId);
+      .eq('section_id', sectionId)
+      .order('"order"', { ascending: true });
     if (error) throw error;
     return data as SubItem[];
   },

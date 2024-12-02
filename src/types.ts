@@ -14,4 +14,9 @@ export interface Section {
     description: string;
     media_urls: string[];
     media_types: string[];
+    modal_content?: {
+      title: string;
+      description: string;
+      images?: string[];
+    };
   }
