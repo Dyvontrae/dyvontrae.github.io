@@ -22,9 +22,9 @@ export const SectionForm: React.FC<SectionFormProps> = ({
       icon: formData.get('icon') as string,
       color: formData.get('color') as string,
       description: formData.get('description') as string,
-      order: parseInt(formData.get('order') as string)
+      order_index: parseInt(formData.get('order_index') as string) // Changed from 'order'
     };
-
+  
     await onSubmit(sectionData);
     (e.target as HTMLFormElement).reset();
   };
@@ -73,13 +73,13 @@ export const SectionForm: React.FC<SectionFormProps> = ({
             <label className="block text-sm text-gray-700 mb-1">Display Order</label>
             <input
               type="number"
-              name="order"
-              defaultValue={editingSection?.order}
+              name="order_index" // Changed from 'order'
+              defaultValue={editingSection?.order_index} // Changed from 'order'
               placeholder="Enter display order"
               className="w-full p-2 border rounded-md"
               required
             />
-          </div>
+           </div>
         </div>
         <div>
           <label className="block text-sm text-gray-700 mb-1">Description</label>
@@ -113,5 +113,3 @@ export const SectionForm: React.FC<SectionFormProps> = ({
     </CollapsibleSection>
   );
 };
-
-export default SectionForm;

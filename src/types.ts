@@ -4,7 +4,7 @@ export interface Section {
     icon: string;
     color: string;
     description: string;
-    order: number;
+    order_index: number;
   }
   
   export interface SubItem {

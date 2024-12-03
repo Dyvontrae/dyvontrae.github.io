@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Section } from '../types';
-import { sectionApi } from '../api/supabase';
+import { supabase } from '../lib/supabase';
+
+export interface Section {
+  id: string;
+  title: string;
+  icon: string;
+  color: string;
+  description: string;
+  order_index: number;
+}
 
 export const useSections = () => {
   const [sections, setSections] = useState<Section[]>([]);
@@ -9,12 +17,75 @@ export const useSections = () => {
 
   const fetchSections = async () => {
     try {
-      const data = await sectionApi.getAll();
-      setSections(data);
+      setLoading(true);
+      console.log('Fetching sections...');//Debug Handle
+
+      const { data, error: fetchError } = await supabase
+        .from('sections')
+        .select('*')
+        .order('order_index');
+
+        console.log('Supabase response:', { data, error: fetchError });//Debug Handle
+
+      if (fetchError) throw fetchError;
+      setSections(data || []);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch sections'));
+      console.error('Error fetching sections:', err);
+      setError(err as Error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addSection = async (section: Omit<Section, 'id'>) => {
+    try {
+      const { data, error: insertError } = await supabase
+        .from('sections')
+        .insert([section])
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+      setSections(prev => [...prev, data]);
+      return data;
+    } catch (err) {
+      console.error('Error adding section:', err);
+      throw err;
+    }
+  };
+
+  const updateSection = async (id: string, updates: Partial<Section>) => {
+    try {
+      const { data, error: updateError } = await supabase
+        .from('sections')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+      setSections(prev => prev.map(section => 
+        section.id === id ? { ...section, ...data } : section
+      ));
+      return data;
+    } catch (err) {
+      console.error('Error updating section:', err);
+      throw err;
+    }
+  };
+
+  const deleteSection = async (id: string) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from('sections')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+      setSections(prev => prev.filter(section => section.id !== id));
+    } catch (err) {
+      console.error('Error deleting section:', err);
+      throw err;
     }
   };
 
@@ -22,34 +93,11 @@ export const useSections = () => {
     fetchSections();
   }, []);
 
-  const addSection = async (section: Omit<Section, 'id'>) => {
-    try {
-      const newSection = await sectionApi.create(section);
-      setSections([...sections, newSection]);
-      return newSection;
-    } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to create section');
-    }
-  };
+  // Debug log when sections state changes
+  useEffect(() => {
+    console.log('Current sections state:', sections);
+  }, [sections]);
 
-  const updateSection = async (id: string, updates: Partial<Section>) => {
-    try {
-      const updatedSection = await sectionApi.update(id, updates);
-      setSections(sections.map(s => s.id === id ? updatedSection : s));
-      return updatedSection;
-    } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to update section');
-    }
-  };
-
-  const deleteSection = async (id: string) => {
-    try {
-      await sectionApi.delete(id);
-      setSections(sections.filter(s => s.id !== id));
-    } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to delete section');
-    }
-  };
 
   return {
     sections,
