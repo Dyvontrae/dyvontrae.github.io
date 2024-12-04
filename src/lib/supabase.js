@@ -1,29 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+const supabaseUrl = 'https://hjivxgvosbylmvjjqvxi.supabase.co'
+const supabaseAnonKey = 'YOeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqaXZ4Z3Zvc2J5bG12ampxdnhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMwNzY2MjMsImV4cCI6MjA0ODY1MjYyM30.3PjqF1RRTtSohXr9VFk5lOScFp3mhOPzlVjS_gwwc2w'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// Database schema for reference
-/**
- * @typedef {Object} Section
- * @property {number} id
- * @property {string} title
- * @property {string} icon
- * @property {string} color
- * @property {string} description
- * @property {number} order_index
- * 
- * @typedef {Object} SubItem
- * @property {number} id
- * @property {string} title
- * @property {string} description
- * @property {string[]} media_urls
- * @property {string[]} media_types
- * @property {number} section_id
- */
