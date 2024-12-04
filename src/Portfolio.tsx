@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Users, Camera, Code, PenTool, ChevronDown, X, LucideIcon } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import VideoBackground from './components/media/VideoBackground';
+import Footer from './components/Footer';
 
 // Types
 interface SubItem {
@@ -162,13 +164,13 @@ const Portfolio: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log('Current sections:', sections); // Debug log
+    console.log('Current sections:', sections);
   }, [sections]);
 
   const fetchSections = async () => {
     try {
       setLoading(true);
-      console.log('Starting to fetch sections'); // Debug log
+      console.log('Starting to fetch sections');
 
       const { data, error } = await supabase
         .from('sections')
@@ -178,22 +180,20 @@ const Portfolio: React.FC = () => {
         `)
         .order('order_index');
 
-      console.log('Supabase response:', { data, error }); // Debug log
+      console.log('Supabase response:', { data, error });
 
       if (error) {
         console.error('Supabase error:', error);
-        console.log('Using default sections due to error'); // Debug log
         setSections(defaultSections);
       } else if (!data || data.length === 0) {
-        console.log('No data returned from Supabase, using default sections'); // Debug log
+        console.log('No data returned from Supabase, using default sections');
         setSections(defaultSections);
       } else {
-        console.log('Setting sections from database:', data); // Debug log
+        console.log('Setting sections from database:', data);
         setSections(data as Section[]);
       }
     } catch (error) {
       console.error('Fetch error:', error);
-      console.log('Using default sections due to catch error'); // Debug log
       setSections(defaultSections);
     } finally {
       setLoading(false);
@@ -207,10 +207,11 @@ const Portfolio: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen w-full flex flex-col"
-      style={{ backgroundColor: colors.polynesianBlue }}
+      className="min-h-screen w-full flex flex-col relative"
+      style={{ backgroundColor: `${colors.polynesianBlue}99` }} // 99 is hex for 60% opacity
     >
-      {/* Admin Link */}
+      <VideoBackground />
+
       <div className="fixed top-4 right-4 z-50">
         <a
           href="/admin"
@@ -220,8 +221,7 @@ const Portfolio: React.FC = () => {
         </a>
       </div>
 
-      {/* Header Container */}
-      <div className="flex-grow flex flex-col items-center">
+      <div className="flex-grow flex flex-col items-center relative z-10">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -241,7 +241,6 @@ const Portfolio: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Main Content Container */}
         <div className="w-full max-w-4xl mx-auto px-6 pb-6 space-y-4">
           {loading ? (
             <div className="text-center text-white">Loading...</div>
@@ -253,9 +252,9 @@ const Portfolio: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
-                  className="rounded-lg p-6 cursor-pointer transition-all w-full bg-white shadow-sm"
+                  className="rounded-lg p-6 cursor-pointer transition-all w-full shadow-sm bg-opacity-80"
                   style={{ 
-                    backgroundColor: colors.antiFlashWhite,
+                    backgroundColor: `${colors.antiFlashWhite}CC`, // CC is hex for 80% opacity
                     borderLeft: `4px solid ${section.color || colors.polynesianBlue}`
                   }}
                 >
@@ -321,7 +320,6 @@ const Portfolio: React.FC = () => {
         </div>
       </div>
 
-      {/* Lightbox Modal */}
       <AnimatePresence>
         {lightboxContent && (
           <motion.div 
@@ -382,6 +380,8 @@ const Portfolio: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Footer />
     </div>
   );
 };
