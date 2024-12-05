@@ -3,13 +3,20 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: '/',  // Keep this as '/' since your site is at root level
+  base: process.env.NODE_ENV === 'production' 
+    ? '/dyvontrae.github.io/' 
+    : '/',
   plugins: [react()],
   build: {
-    outDir: 'dist'
-  },
-  server: {
-    historyApiFallback: true
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
+    }
   },
   resolve: {
     alias: {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import SubItemForm from './SubItemForm';
 import SubItemMedia from '@/components/media/SubItemMedia';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Media {
   type: 'file' | 'youtube';
@@ -73,7 +74,7 @@ const SubItemList = ({ sectionId }: SubItemListProps) => {
       const existingItem = editingItem ? subItems.find(i => i.id === editingItem.id) : null;
 
       const subItemData: SubItem = {
-        id: editingItem?.id || '',
+        id: editingItem?.id || uuidv4(),  // Generate new UUID for new items
         section_id: sectionId,
         title: data.title,
         description: data.description,

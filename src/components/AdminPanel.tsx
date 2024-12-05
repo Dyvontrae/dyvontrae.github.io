@@ -9,6 +9,7 @@ import SubItemList from './subitems/SubItemList';
 import { PasswordModal } from './PasswordModal';
 import { CollapsibleSection } from './CollapsibleSection';
 
+
 export const AdminPanel: React.FC = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
