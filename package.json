@@ -1,24 +1,26 @@
 {
     "name": "dyvontrae.github.io",
     "private": true,
-    "version": "0.0.0",
+    "version": "1.2.0",
     "type": "module",
     "homepage": "https://dyvontrae.github.io",
     "scripts": {
         "dev": "vite",
-        "build": "NODE_ENV=production tsc && vite build",
+        "build": "set NODE_ENV=production && tsc && vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
         "predeploy": "npm run build",
         "deploy": "gh-pages -d dist"
     },
     "dependencies": {
+        "-": "^0.0.1",
         "@radix-ui/react-toast": "^1.2.2",
         "@supabase/auth-ui-react": "^0.4.7",
         "@supabase/auth-ui-shared": "^0.1.8",
         "@supabase/supabase-js": "^2.46.2",
         "framer-motion": "^10.18.0",
         "lucide-react": "^0.292.0",
+        "npm": "^10.9.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-dropzone": "^14.3.5",

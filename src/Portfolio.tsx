@@ -3,29 +3,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Users, Camera, Code, PenTool, ChevronDown, X, LucideIcon } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import VideoBackground from './components/media/VideoBackground';
+import SubItemMedia from './components/media/SubItemMedia';
+import { Media } from './components/media/MediaUpload';
 import Footer from './components/Footer';
 
 // Types
 interface SubItem {
-  id: number;
+  id: string;
   title: string;
   description: string;
-  media_urls: string[];
-  media_types: string[];
+  media_items: Media[];
+  order_index: number;
 }
 
 interface Section {
-  id: number;
+  id: string;
   title: string;
   icon: string;
   color: string;
   description: string;
   sub_items: SubItem[];
-  order_index?: number;
-}
-
-interface VideoEmbedProps {
-  url: string;
+  order_index: number;
 }
 
 // Constants
@@ -37,142 +35,24 @@ const colors = {
   polynesianBlue: '#004E98'
 } as const;
 
-// Default sections for fallback
-const defaultSections: Section[] = [
-  {
-    id: 1,
-    title: 'Community Action',
-    icon: 'Heart',
-    color: colors.polynesianBlue,
-    description: 'Housing Justice & Community Building',
-    sub_items: [
-      {
-        id: 1,
-        title: 'Housing Rights Workshop',
-        description: 'Community education series on tenant rights',
-        media_urls: ['/api/placeholder/800/600'],
-        media_types: ['image']
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: 'Events',
-    icon: 'Users',
-    color: colors.pumpkin,
-    description: 'Texas Toku Taisen & Cultural Events',
-    sub_items: [
-      {
-        id: 2,
-        title: 'Anime at the Alamo',
-        description: 'Free community anime screenings at the Alamo Drafthouse',
-        media_urls: ['/api/placeholder/800/600'],
-        media_types: ['image']
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: 'Media',
-    icon: 'Camera',
-    color: colors.biceBlue,
-    description: 'Video Production & Content Creation',
-    sub_items: [
-      {
-        id: 3,
-        title: 'YouTube Channel',
-        description: 'Regular content updates and tutorials',
-        media_urls: ['/api/placeholder/800/600'],
-        media_types: ['image']
-      }
-    ]
-  },
-  {
-    id: 4,
-    title: 'Art & Illustration',
-    icon: 'PenTool',
-    color: colors.pumpkin,
-    description: 'Digital Art & Traditional Illustrations',
-    sub_items: [
-      {
-        id: 4,
-        title: 'Digital Art Portfolio',
-        description: 'Collection of digital illustrations and designs',
-        media_urls: ['/api/placeholder/800/600'],
-        media_types: ['image']
-      }
-    ]
-  },
-  {
-    id: 5,
-    title: 'Development',
-    icon: 'Code',
-    color: colors.polynesianBlue,
-    description: 'Software & Web Solutions',
-    sub_items: [
-      {
-        id: 5,
-        title: 'Portfolio Projects',
-        description: 'Collection of web and software development work',
-        media_urls: ['/api/placeholder/800/600'],
-        media_types: ['image']
-      }
-    ]
-  }
-];
-
-// Video embedding component
-const VideoEmbed: React.FC<VideoEmbedProps> = ({ url }) => {
-  const getEmbedUrl = (videoUrl: string): string => {
-    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-      const videoId = videoUrl.split('v=')[1] || videoUrl.split('/').pop();
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-    if (videoUrl.includes('instagram.com')) {
-      const postId = videoUrl.split('/p/')[1]?.split('/')[0];
-      return `https://www.instagram.com/p/${postId}/embed`;
-    }
-    if (videoUrl.includes('tiktok.com')) {
-      const videoId = videoUrl.split('/video/')[1]?.split('?')[0];
-      return `https://www.tiktok.com/embed/${videoId}`;
-    }
-    return videoUrl;
-  };
-
-  return (
-    <div className="aspect-w-16 aspect-h-9">
-      <iframe
-        src={getEmbedUrl(url)}
-        className="w-full h-full"
-        allowFullScreen
-        loading="lazy"
-        allow="autoplay; encrypted-media; picture-in-picture"
-      />
-    </div>
-  );
-};
-
 // Main Portfolio component
 const Portfolio: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<number | null>(null);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const [lightboxContent, setLightboxContent] = useState<SubItem | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSections();
   }, []);
 
-  useEffect(() => {
-    console.log('Current sections:', sections);
-  }, [sections]);
-
   const fetchSections = async () => {
     try {
       setLoading(true);
-      console.log('Starting to fetch sections');
-
-      const { data, error } = await supabase
+      setError(null);
+      
+      const { data, error: supabaseError } = await supabase
         .from('sections')
         .select(`
           *,
@@ -180,21 +60,13 @@ const Portfolio: React.FC = () => {
         `)
         .order('order_index');
 
-      console.log('Supabase response:', { data, error });
+      if (supabaseError) throw supabaseError;
+      if (!data) throw new Error('No data returned from database');
 
-      if (error) {
-        console.error('Supabase error:', error);
-        setSections(defaultSections);
-      } else if (!data || data.length === 0) {
-        console.log('No data returned from Supabase, using default sections');
-        setSections(defaultSections);
-      } else {
-        console.log('Setting sections from database:', data);
-        setSections(data as Section[]);
-      }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setSections(defaultSections);
+      setSections(data as Section[]);
+    } catch (err) {
+      console.error('Error fetching sections:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load content');
     } finally {
       setLoading(false);
     }
@@ -208,24 +80,24 @@ const Portfolio: React.FC = () => {
   return (
     <div 
       className="min-h-screen w-full flex flex-col relative"
-      style={{ backgroundColor: `${colors.polynesianBlue}99` }} // 99 is hex for 60% opacity
+      style={{ backgroundColor: `${colors.polynesianBlue}99` }}
     >
       <VideoBackground />
 
-      <div className="fixed top-4 right-4 z-50">
+      <header className="fixed w-full top-0 right-0 z-50 flex justify-end p-4">
         <a
           href="/admin"
           className="px-4 py-2 bg-gray-800 text-white rounded-lg opacity-50 hover:opacity-100 transition-opacity"
         >
           Admin
         </a>
-      </div>
+      </header>
 
       <div className="flex-grow flex flex-col items-center relative z-10">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-16"
+          className="text-center py-16 mt-8"
         >
           <h1 
             className="text-8xl font-bold mb-4"
@@ -244,22 +116,25 @@ const Portfolio: React.FC = () => {
         <div className="w-full max-w-4xl mx-auto px-6 pb-6 space-y-4">
           {loading ? (
             <div className="text-center text-white">Loading...</div>
+          ) : error ? (
+            <div className="text-center text-red-500 bg-white/80 p-4 rounded-lg">
+              {error}
+            </div>
           ) : (
-            sections.map((section, index) => (
+            sections.map((section) => (
               <div key={section.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
                   onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
                   className="rounded-lg p-6 cursor-pointer transition-all w-full shadow-sm bg-opacity-80"
                   style={{ 
-                    backgroundColor: `${colors.antiFlashWhite}CC`, // CC is hex for 80% opacity
-                    borderLeft: `4px solid ${section.color || colors.polynesianBlue}`
+                    backgroundColor: `${colors.antiFlashWhite}CC`,
+                    borderLeft: `4px solid ${section.color}`
                   }}
                 >
                   <div className="flex items-center gap-4">
-                    <div style={{ color: section.color || colors.polynesianBlue }}>
+                    <div style={{ color: section.color }}>
                       {React.createElement(getIconComponent(section.icon), {
                         size: 24
                       })}
@@ -277,7 +152,7 @@ const Portfolio: React.FC = () => {
                     </div>
                     <ChevronDown 
                       className={`transition-transform ${activeSection === section.id ? 'rotate-180' : ''}`}
-                      style={{ color: section.color || colors.polynesianBlue }}
+                      style={{ color: section.color }}
                     />
                   </div>
                 </motion.div>
@@ -361,20 +236,18 @@ const Portfolio: React.FC = () => {
                 >
                   {lightboxContent.description}
                 </p>
-                <div className="grid grid-cols-2 gap-4">
-                  {lightboxContent.media_urls?.map((url, idx) => (
-                    lightboxContent.media_types?.[idx] === 'video' ? (
-                      <VideoEmbed key={idx} url={url} />
-                    ) : (
-                      <img 
-                        key={idx} 
-                        src={url} 
-                        alt={`${lightboxContent.title} ${idx + 1}`} 
-                        className="rounded-lg w-full"
-                      />
-                    )
-                  ))}
-                </div>
+                {lightboxContent.media_items && lightboxContent.media_items.length > 0 ? (
+                  <SubItemMedia 
+                    mediaItems={lightboxContent.media_items}
+                    onMediaAdd={() => {}} // No-op since we're in view mode
+                    onMediaRemove={() => {}} // No-op since we're in view mode
+                    isEditing={false}
+                  />
+                ) : (
+                  <p className="text-center text-gray-500 italic">
+                    No media content available
+                  </p>
+                )}
               </div>
             </div>
           </motion.div>

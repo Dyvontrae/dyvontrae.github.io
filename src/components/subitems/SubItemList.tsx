@@ -1,20 +1,9 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import SubItemForm from './SubItemForm';
-import SubItemMedia from '@/components/media/SubItemMedia';
+import SubItemMedia from '../media/SubItemMedia';
+import { Media } from '../media/MediaUpload';
 import { v4 as uuidv4 } from 'uuid';
-
-interface Media {
-  type: 'file' | 'youtube';
-  url?: string;
-  file?: File;
-  metadata: {
-    title: string;
-    description?: string;
-    thumbnail?: string;
-    altText?: string;
-  };
-}
 
 interface SubItem {
   id: string;
@@ -36,11 +25,11 @@ interface SubItemFormData {
   order: number;
 }
 
-interface SubItemListProps {
+export interface SubItemListProps {
   sectionId: string;
 }
 
-const SubItemList = ({ sectionId }: SubItemListProps) => {
+const SubItemList: React.FC<SubItemListProps> = ({ sectionId }) => {
   const [subItems, setSubItems] = useState<SubItem[]>([]);
   const [editingItem, setEditingItem] = useState<SubItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +63,7 @@ const SubItemList = ({ sectionId }: SubItemListProps) => {
       const existingItem = editingItem ? subItems.find(i => i.id === editingItem.id) : null;
 
       const subItemData: SubItem = {
-        id: editingItem?.id || uuidv4(),  // Generate new UUID for new items
+        id: editingItem?.id || uuidv4(),
         section_id: sectionId,
         title: data.title,
         description: data.description,
@@ -123,7 +112,7 @@ const SubItemList = ({ sectionId }: SubItemListProps) => {
 
       let finalMedia = { ...newMedia };
 
-      if (newMedia.file) {
+      if (newMedia.file && newMedia.file instanceof File) {
         const fileExt = newMedia.file.name.split('.').pop();
         const fileName = `${itemId}/${Date.now()}.${fileExt}`;
 

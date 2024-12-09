@@ -1,25 +1,39 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
-import MediaUpload from './MediaUpload';
+import React, { useState, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Plus, X, Maximize2 } from 'lucide-react';
+import MediaUpload, { Media } from '../media/MediaUpload';
 
-export interface Media {
-  type: 'file' | 'youtube';
-  url?: string;
-  file?: File;
-  metadata: {
-    title: string;
-    description?: string;
-    thumbnail?: string;
-    altText?: string;
-  };
-}
+
 
 interface SubItemMediaProps {
-  mediaItems: Media[];
+  mediaItems: Media[];  // Use the imported Media type directly
   onMediaAdd: (media: Media) => void;
   onMediaRemove: (index: number) => void;
   isEditing?: boolean;
 }
+
+const getYouTubeVideoId = (url: string): string | null => {
+  if (!url) return null;
+  
+  const embedPattern = /youtube\.com\/embed\/([A-Za-z0-9_-]+)/;
+  const embedMatch = url.match(embedPattern);
+  if (embedMatch) return embedMatch[1];
+  
+  const patterns = [
+    /youtube\.com\/watch\?v=([A-Za-z0-9_-]+)/,
+    /youtu\.be\/([A-Za-z0-9_-]+)/,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]+)/
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) return match[1];
+  }
+  return null;
+};
+
+const getEmbedUrl = (videoId: string): string => {
+  return `https://www.youtube.com/embed/${videoId}`;
+};
 
 const SubItemMedia: React.FC<SubItemMediaProps> = ({
   mediaItems,
@@ -27,8 +41,11 @@ const SubItemMedia: React.FC<SubItemMediaProps> = ({
   onMediaRemove,
   isEditing = false
 }) => {
+  const [viewMode, setViewMode] = useState<'grid' | 'single'>('grid');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showUpload, setShowUpload] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeVideo, setActiveVideo] = useState<{id: string, url: string} | null>(null);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % mediaItems.length);
@@ -38,68 +55,181 @@ const SubItemMedia: React.FC<SubItemMediaProps> = ({
     setCurrentIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
   };
 
-  const renderMediaItem = (item: Media) => {
+  const renderMediaItem = useCallback((item: Media, mode: 'grid' | 'single' = 'single') => {
     if (!item.url) return null;
 
     if (item.type === 'youtube') {
-      const videoId = item.url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/)?.[1];
-      if (!videoId) return null;
+      const videoId = item.videoId || getYouTubeVideoId(item.url);
+      
+      if (!videoId) {
+        return (
+          <div className="w-full aspect-video flex flex-col items-center justify-center bg-gray-100 rounded-lg p-4">
+            <p className="text-red-500 mb-2">Unable to load video preview</p>
+            <a 
+              href={item.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              {item.metadata.title || 'Watch Video'}
+            </a>
+          </div>
+        );
+      }
 
       return (
-        <iframe
-          src={`https://www.youtube.com/embed/${videoId}`}
-          className="w-full aspect-video"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
+        <div className="relative w-full aspect-video">
+          <div 
+            onClick={() => {
+              if (mode === 'grid') {
+                setCurrentIndex(mediaItems.findIndex(m => m.url === item.url));
+                setViewMode('single');
+              } else {
+                setActiveVideo({
+                  id: videoId,
+                  url: getEmbedUrl(videoId)
+                });
+              }
+            }}
+            className="relative w-full h-full cursor-pointer group"
+          >
+            {item.metadata.thumbnail ? (
+              <img
+                src={item.metadata.thumbnail}
+                alt={item.metadata.title || 'Video thumbnail'}
+                className="w-full h-full object-cover rounded-lg"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                  target.onerror = () => {
+                    target.src = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+                    target.onerror = null;
+                  };
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
+                <div className="text-center">
+                  <p className="mb-2">{item.metadata.title || 'Video Preview Unavailable'}</p>
+                  <a 
+                    href={item.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    Watch on YouTube
+                  </a>
+                </div>
+              </div>
+            )}
+
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          {mode === 'single' && item.metadata.description && (
+            <p className="mt-2 text-sm text-gray-600">
+              {item.metadata.description}
+            </p>
+          )}
+        </div>
       );
     } else {
       return (
-        <img
-          src={item.url}
-          alt={item.metadata.altText || item.metadata.title}
-          className="w-full h-full object-contain"
-        />
+        <div 
+          className={`relative w-full ${mode === 'grid' ? 'aspect-video' : 'h-full'}`}
+          onClick={() => {
+            if (mode === 'grid') {
+              setCurrentIndex(mediaItems.findIndex(m => m.url === item.url));
+              setViewMode('single');
+            }
+          }}
+        >
+          <img
+            src={item.url}
+            alt={item.metadata.altText || item.metadata.title}
+            className={`w-full h-full object-cover rounded-lg ${mode === 'grid' ? 'cursor-pointer' : ''}`}
+          />
+          {mode === 'grid' && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all group">
+              <Maximize2 className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          )}
+          {mode === 'single' && item.metadata.description && (
+            <p className="mt-4 text-sm text-gray-600">
+              {item.metadata.description}
+            </p>
+          )}
+        </div>
       );
     }
-  };
+  }, [mediaItems]);
 
   return (
     <div className="relative w-full">
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
       {mediaItems.length > 0 ? (
-        <div className="relative w-full h-96">
-          {renderMediaItem(mediaItems[currentIndex])}
-          
-          {mediaItems.length > 1 && (
-            <>
-              <button
-                onClick={prevSlide}
-                className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full text-white"
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full text-white"
-              >
-                <ChevronRight size={24} />
-              </button>
-            </>
-          )}
-          
-          <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full">
-            {currentIndex + 1} / {mediaItems.length}
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
+            {mediaItems.map((item, index) => (
+              <div key={index} className="aspect-video w-full">
+                {renderMediaItem(item, 'grid')}
+              </div>
+            ))}
           </div>
-          
-          {isEditing && (
+        ) : (
+          <div className="relative w-full">
+            <div className="aspect-video mb-4">
+              {renderMediaItem(mediaItems[currentIndex], 'single')}
+            </div>
+            
+            {mediaItems.length > 1 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full text-white hover:bg-black/75 transition-colors"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full text-white hover:bg-black/75 transition-colors"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            )}
+            
             <button
-              onClick={() => onMediaRemove(currentIndex)}
-              className="absolute top-4 right-4 p-2 bg-red-500 rounded-full text-white"
+              onClick={() => setViewMode('grid')}
+              className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white hover:bg-black/75 transition-colors"
             >
               <X size={16} />
             </button>
-          )}
-        </div>
+            
+            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full">
+              {currentIndex + 1} / {mediaItems.length}
+            </div>
+            
+            {isEditing && (
+              <button
+                onClick={() => onMediaRemove(currentIndex)}
+                className="absolute top-4 left-4 p-2 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        )
       ) : (
         <div className="w-full h-48 flex items-center justify-center border-2 border-dashed rounded-lg">
           <p className="text-gray-500">No media added yet</p>
@@ -111,16 +241,35 @@ const SubItemMedia: React.FC<SubItemMediaProps> = ({
           {showUpload ? (
             <div className="border rounded-lg p-4">
               <MediaUpload
-                onUploadComplete={(media) => {
+                onUploadComplete={(media: Media) => {
+                  console.log('Media upload complete:', media);
+                  if (media.type === 'youtube') {
+                    const videoId = getYouTubeVideoId(media.url || '');
+                    if (videoId) {
+                      media.videoId = videoId;
+                    }
+                  }
                   onMediaAdd(media);
                   setShowUpload(false);
                 }}
-                onError={(error) => console.error(error)}
+                onError={(error: unknown) => {
+                  console.error('Upload error:', error);
+                  if (typeof error === 'string') {
+                    setError(error);
+                  } else if (error instanceof Error) {
+                    setError(error.message);
+                  } else {
+                    setError('An error occurred');
+                  }
+                }}
               />
             </div>
           ) : (
             <button
-              onClick={() => setShowUpload(true)}
+              onClick={() => {
+                setShowUpload(true);
+                setError(null);
+              }}
               className="w-full py-2 px-4 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-gray-600 hover:bg-gray-50"
             >
               <Plus size={20} />
@@ -130,24 +279,34 @@ const SubItemMedia: React.FC<SubItemMediaProps> = ({
         </div>
       )}
 
-      {mediaItems.length > 1 && (
-        <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-          {mediaItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`flex-shrink-0 w-20 h-20 border-2 rounded overflow-hidden
-                ${currentIndex === index ? 'border-blue-500' : 'border-transparent'}`}
+      {activeVideo && (
+        <div 
+          className="fixed inset-0 z-50 overflow-y-auto"
+          onClick={() => setActiveVideo(null)}
+        >
+          <div className="min-h-screen px-4 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/75 transition-opacity"></div>
+            
+            <div 
+              className="relative bg-black rounded-lg overflow-hidden max-w-6xl w-full mx-auto my-8"
+              onClick={e => e.stopPropagation()}
             >
-              {item.url && (
-                <img
-                  src={item.type === 'youtube' && item.metadata.thumbnail ? item.metadata.thumbnail : item.url}
-                  alt={`Thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
+              <div className="aspect-video">
+                <iframe
+                  src={activeVideo.url}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                 />
-              )}
-            </button>
-          ))}
+              </div>
+              <button
+                onClick={() => setActiveVideo(null)}
+                className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

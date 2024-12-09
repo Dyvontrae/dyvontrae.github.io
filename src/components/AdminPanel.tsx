@@ -119,17 +119,17 @@ export const AdminPanel: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Debug info overlay - only visible during development */}
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Debug info overlay */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-0 right-0 bg-black/10 text-xs p-2 m-2 rounded">
+        <div className="fixed top-20 right-4 bg-black/10 text-xs p-2 rounded">
           Sections: {sections.length} | Loading: {String(sectionsLoading)}
         </div>
       )}
-
-      <div className="container mx-auto p-4">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+  
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+        <div className="container mx-auto p-4">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">Portfolio Admin Panel</h1>
@@ -151,80 +151,87 @@ export const AdminPanel: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Section Form */}
-        <SectionForm 
-          editingSection={editingSection}
-          onSubmit={handleSectionSubmit}
-          onCancel={() => setEditingSection(null)}
-        />
-
-        {/* Sections List with Sub-items */}
-        <div className="space-y-6">
-          {sections.map((section) => (
-            <div
-              key={section.id}
-              className="bg-white rounded-lg shadow-sm"
-            >
+      </div>
+  
+      {/* Main Content Area */}
+      <div className="flex-1 pt-24 pb-8 overflow-y-auto">
+        <div className="container mx-auto px-4">
+          {/* Section Form */}
+          <div className="mb-8">
+            <SectionForm 
+              editingSection={editingSection}
+              onSubmit={handleSectionSubmit}
+              onCancel={() => setEditingSection(null)}
+            />
+          </div>
+  
+          {/* Sections List with Sub-items */}
+          <div className="space-y-8">
+            {sections.map((section) => (
               <div
-                className="border rounded-lg p-4"
-                style={{ borderLeftColor: section.color, borderLeftWidth: '4px' }}
+                key={section.id}
+                className="bg-white rounded-lg shadow-sm"
               >
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">{section.title}</h3>
-                  <div className="space-x-2">
-                    <button
-                      onClick={() => setSelectedSectionId(
-                        selectedSectionId === section.id ? null : section.id ?? null
-                      )}
-                      className="px-3 py-1 bg-green-100 text-green-600 rounded-md hover:bg-green-200"
-                    >
-                      {selectedSectionId === section.id ? 'Close Items' : 'Manage Items'}
-                    </button>
-                    <button
-                      onClick={() => setEditingSection(section)}
-                      className="px-3 py-1 bg-blue-100 rounded-md hover:bg-blue-200"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to delete this section?')) {
-                          deleteSection(section.id!);
-                        }
-                      }}
-                      className="px-3 py-1 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
-                    >
-                      Delete
-                    </button>
+                <div
+                  className="border rounded-lg p-4"
+                  style={{ borderLeftColor: section.color, borderLeftWidth: '4px' }}
+                >
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">{section.title}</h3>
+                    <div className="space-x-2">
+                      <button
+                        onClick={() => setSelectedSectionId(
+                          selectedSectionId === section.id ? null : section.id ?? null
+                        )}
+                        className="px-3 py-1 bg-green-100 text-green-600 rounded-md hover:bg-green-200"
+                      >
+                        {selectedSectionId === section.id ? 'Close Items' : 'Manage Items'}
+                      </button>
+                      <button
+                        onClick={() => setEditingSection(section)}
+                        className="px-3 py-1 bg-blue-100 rounded-md hover:bg-blue-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to delete this section?')) {
+                            deleteSection(section.id!);
+                          }
+                        }}
+                        className="px-3 py-1 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 mt-2">{section.description}</p>
+                  <div className="text-sm text-gray-500 mt-2">
+                    Order: {section.order_index} | Icon: {section.icon}
                   </div>
                 </div>
-                <p className="text-gray-600 mt-2">{section.description}</p>
-                <div className="text-sm text-gray-500 mt-2">
-                  Order: {section.order_index} | Icon: {section.icon}
-                </div>
+                
+                {/* Sub-items Management */}
+                {selectedSectionId === section.id && (
+                  <div className="border-t p-4">
+                    <CollapsibleSection
+                      title="Manage Items"
+                      description={`Add and manage items for ${section.title}`}
+                      defaultOpen={true}
+                    >
+                      <SubItemList sectionId={section.id!} />
+                    </CollapsibleSection>
+                  </div>
+                )}
               </div>
-              
-              {/* Sub-items Management */}
-              {selectedSectionId === section.id && (
-                <div className="border-t p-4">
-                  <CollapsibleSection
-                    title="Manage Items"
-                    description={`Add and manage items for ${section.title}`}
-                    defaultOpen={true}
-                  >
-                    <SubItemList sectionId={section.id!} />
-                  </CollapsibleSection>
-                </div>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
+  
+          <PasswordModal 
+            isOpen={isPasswordModalOpen}
+            onClose={() => setIsPasswordModalOpen(false)}
+          />
         </div>
-
-        <PasswordModal 
-          isOpen={isPasswordModalOpen}
-          onClose={() => setIsPasswordModalOpen(false)}
-        />
       </div>
     </div>
   );
