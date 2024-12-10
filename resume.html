@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dyvontrae Johnson - Resume</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.5in;
+            background: linear-gradient(180deg, #001f3f 0%, #003366 100%);
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            
+            .section-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: rgba(0, 31, 63, 0.9);
+            border-radius: 8px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.1em;
+        }
+        
+        .header .subtitle {
+            color: #999;
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+        
+        .contact-info {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .contact-info a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            color: #003366;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #003366;
+        }
+        
+        .experience-item {
+            margin-bottom: 1.5rem;
+        }
+        
+        .experience-header {
+            margin-bottom: 0.5rem;
+        }
+        
+        .role-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #003366;
+            display: block;
+        }
+        
+        .company-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.2rem;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding-left: 1.2rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        li:before {
+            content: "•";
+            position: absolute;
+            left: -1.2rem;
+            color: #003366;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .references {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: 1rem;
+        }
+        
+        .creative-skills {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .skill-item {
+            padding: 0.5rem;
+            background: rgba(0, 51, 102, 0.05);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DYVONTRAE JOHNSON</h1>
+        <div class="subtitle">CREATOR • ORGANIZER • DEVELOPER</div>
+    </div>
+    
+    <div class="contact-info">
+        San Antonio, TX 78210 • (726) 400-6706<br>
+        <a href="mailto:dyvontrae@gmail.com">dyvontrae@gmail.com</a> • 
+        <a href="https://dyvontrae.github.io/">dyvontrae.github.io</a>
+    </div>
+    
+    <div class="section-card">
+        <h2 class="section-title">Professional Summary</h2>
+        <p>
+            Passionate problem solver and tech expert with a proven track record in troubleshooting, system management, and community organizing. As a black queer single father, I merge technical prowess with a heartfelt commitment to building resilient communities through positive social change. My experience spans from leading impactful community initiatives to developing technical solutions for various organizations.
+        </p>
+    </div>
+    
+    <div class="two-column">
+        <div class="section-card">
+            <h2 class="section-title">Community Leadership</h2>
+            
+            <div class="experience-item">
+                <div class="experience-header">
+                    <span class="role-title">Lead Parent Organizer</span>
+                    <div class="company-line">
+                        <span>Our Schools San Antonio</span>
+                        <span>2022 - 2023</span>
+                    </div>
+                </div>
+                <ul>
+                    <li>Developed organization's website and email marketing campaign</li>
+                    <li>Coordinated and planned events for local school-level parent engagement</li>
+                    <li>Empowered parents with tools to organize for better schools</li>
+                </ul>
+            </div>
+            
+            <div class="experience-item">
+                <div class="experience-header">
+                    <span class="role-title">Housing Justice Organizer</span>
+                    <div class="company-line">
+                        <span>Texas Organizing Project</span>
+                        <span>2022</span>
+                    </div>
+                </div>
+                <ul>
+                    <li>Led Housing Justice campaign and formed tenant unions</li>
+                    <li>Contributed to the Tenants Bill of Rights city ordinance</li>
+                    <li>Helped establish the Proactive Apartment Inspections Program</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section-card">
+            <h2 class="section-title">Technical Experience</h2>
+            
+            <div class="experience-item">
+                <div class="experience-header">
+                    <span class="role-title">Owner</span>
+                    <div class="company-line">
+                        <span>Mecha Gorilla, LLC.</span>
+                        <span>2013 - Present</span>
+                    </div>
+                </div>
+                <ul>
+                    <li>Created and managed the first tokusatsu film festival in Texas</li>
+                    <li>Built effective marketing platforms and revenue streams</li>
+                    <li>Developed web solutions and digital content strategies</li>
+                </ul>
+            </div>
+            
+            <div class="experience-item">
+                <div class="experience-header">
+                    <span class="role-title">IT Support Specialist</span>
+                    <div class="company-line">
+                        <span>USAA & Coinbase</span>
+                        <span>2018 - 2019</span>
+                    </div>
+                </div>
+                <ul>
+                    <li>Provided comprehensive IT support using PowerShell and various OS environments</li>
+                    <li>Handled cryptocurrency wallet support and account troubleshooting</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section-card">
+        <h2 class="section-title">Education & Certifications</h2>
+        <div class="two-column">
+            <div>
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <span class="role-title">Bachelor's in Information Technology (In Progress)</span>
+                        <div class="company-line">
+                            <span>University of the Incarnate Word</span>
+                        </div>
+                    </div>
+                    <ul>
+                        <li>Minor in Bass Performance (Classical Music Training)</li>
+                        <li>Founder, General Technologist Organization</li>
+                        <li>Former President, AITP (2011)</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <span class="role-title">Professional Certifications</span>
+                        <div class="company-line">
+                            <span>Train for Jobs SA</span>
+                            <span>2022</span>
+                        </div>
+                    </div>
+                    <ul>
+                        <li>CompTIA IT Fundamentals, Network+, Security+, A+</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section-card">
+        <h2 class="section-title">Creative Skills</h2>
+        <div class="creative-skills">
+            <div class="skill-item">Digital Art & Illustration: Character design, concept art</div>
+            <div class="skill-item">Video Production: Event documentation, promotional content</div>
+            <div class="skill-item">Multimedia Design: Web graphics, marketing materials</div>
+        </div>
+        <div class="references">
+            Professional references available upon request
+        </div>
+    </div>
+</body>
+</html>
