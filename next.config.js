@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: 'export', // Enables static HTML export
-    basePath: '/dyvontrae.github.io', // For GitHub Pages
+    output: 'export',
     images: {
-      unoptimized: true // Required for static export
-    }
+      unoptimized: true,
+    },
+    basePath: '',
   }
   
   module.exports = nextConfig

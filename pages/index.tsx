@@ -1,6 +1,7 @@
 import { PortfolioSection } from '../src/components/PortfolioSection'
 import { useState } from 'react'
 import { portfolioSections } from '../src/data/portfolioSections'
+import { Settings } from 'lucide-react'
 
 export default function Home() {
   const [expandedSection, setExpandedSection] = useState<boolean>(false);
@@ -15,6 +16,16 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#001830] p-4">
+      {/* Admin Navigation */}
+      <div className="absolute top-4 right-4 z-50">
+        <button 
+          className="bg-white/10 p-2 rounded-lg hover:bg-white/20 transition-colors"
+          onClick={() => window.location.href = '/login'}
+        >
+          <Settings className="w-5 h-5 text-white" />
+        </button>
+      </div>
+
       <div className="container mx-auto max-w-3xl">
         <header className="text-center py-12">
           <h1 className="text-6xl font-bold mb-4 text-white" style={{
