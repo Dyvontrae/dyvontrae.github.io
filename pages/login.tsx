@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
-declare global {
-  interface Window {
-    supabase: any;
-  }
-}
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -18,7 +15,7 @@ const Login = () => {
     setError('');
 
     try {
-      const { error } = await window.supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
