@@ -2,7 +2,7 @@ import { PortfolioSection } from '../src/components/PortfolioSection'
 import { useState } from 'react'
 import { portfolioSections } from '../src/data/portfolioSections'
 import { Settings } from 'lucide-react'
-import { Dialog, DialogContent } from '../components/ui/dialog'
+import { Dialog, DialogContent } from '../src/components/ui/dialog'
 
 export default function Home() {
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
