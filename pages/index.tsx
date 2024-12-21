@@ -4,9 +4,17 @@ import { portfolioSections } from '../src/data/portfolioSections'
 import { Settings } from 'lucide-react'
 import { Dialog, DialogContent } from '../src/components/ui/dialog'
 
+// Define interface for modal state
+interface ModalState {
+  isOpen: boolean;
+  type: string | null;
+  title: string;
+  content: any;
+}
+
 export default function Home() {
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  const [selectedModal, setSelectedModal] = useState({
+  const [selectedModal, setSelectedModal] = useState<ModalState>({
     isOpen: false,
     type: null,
     title: '',
