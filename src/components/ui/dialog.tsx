@@ -6,10 +6,15 @@ import { cn } from "@/lib/utils"
 const Dialog = DialogPrimitive.Root
 const DialogTrigger = DialogPrimitive.Trigger
 
+// Define a custom interface that extends DialogPortalProps
+interface DialogPortalCustomProps extends DialogPrimitive.DialogPortalProps {
+  className?: string
+}
+
 const DialogPortal = ({
   children,
   ...props
-}: DialogPrimitive.DialogPortalProps) => (
+}: DialogPortalCustomProps) => (
   <DialogPrimitive.Portal {...props}>
     <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
       {children}
