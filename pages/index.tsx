@@ -2,16 +2,37 @@ import { PortfolioSection } from '../src/components/PortfolioSection'
 import { useState } from 'react'
 import { portfolioSections } from '../src/data/portfolioSections'
 import { Settings } from 'lucide-react'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 
 export default function Home() {
-  const [expandedSection, setExpandedSection] = useState<boolean>(false);
+  const [expandedSection, setExpandedSection] = useState<number | null>(null);
+  const [selectedModal, setSelectedModal] = useState({
+    isOpen: false,
+    type: null,
+    title: '',
+    content: null
+  });
 
-  const handleToggle = () => {
-    setExpandedSection(!expandedSection);
+  const handleToggle = (index: number) => {
+    setExpandedSection(expandedSection === index ? null : index);
   };
 
   const handleSubItemClick = (type: string, title: string, content: any) => {
-    console.log(type, title, content);
+    setSelectedModal({
+      isOpen: true,
+      type,
+      title,
+      content
+    });
+  };
+
+  const closeModal = () => {
+    setSelectedModal({
+      isOpen: false,
+      type: null,
+      title: '',
+      content: null
+    });
   };
 
   return (
@@ -47,13 +68,55 @@ export default function Home() {
             <PortfolioSection 
               key={index}
               section={section}
-              isExpanded={expandedSection}
-              onToggle={handleToggle}
+              isExpanded={expandedSection === index}
+              onToggle={() => handleToggle(index)}
               onSubItemClick={handleSubItemClick}
             />
           ))}
         </div>
       </div>
+
+      {/* Modal */}
+      <Dialog open={selectedModal.isOpen} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="bg-[#001830] text-white border-blue-400">
+          {selectedModal.isOpen && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">{selectedModal.title}</h2>
+              {/* Render content based on type */}
+              {selectedModal.type === 'gallery' && (
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.isArray(selectedModal.content) && selectedModal.content.map((item, idx) => (
+                    <div key={idx} className="bg-white/10 rounded-lg p-4">
+                      <img src={item.image} alt={item.title} className="w-full rounded-lg mb-2" />
+                      <h3 className="font-semibold">{item.title}</h3>
+                      <p className="text-sm text-gray-300">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {selectedModal.type === 'youtube' && (
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.isArray(selectedModal.content) && selectedModal.content.map((video, idx) => (
+                    <div key={idx} className="bg-white/10 rounded-lg overflow-hidden">
+                      <div className="relative">
+                        <img 
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full rounded-t-lg"
+                        />
+                        <div className="p-4">
+                          <h3 className="font-semibold mb-2">{video.title}</h3>
+                          <p className="text-sm text-gray-300">{video.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
