@@ -1,10 +1,37 @@
+// pages/admin.tsx
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 import { Dialog } from '@/components/ui/dialog';
 import { PortfolioSection } from '@/components/PortfolioSection';
-import { PostgrestError } from '@supabase/supabase-js';
+import ContactManager from '@/components/ContactManager';
 import type { Section, SubItem } from '@/types/portfolio';
+
+type ErrorWithMessage = {
+  message: string;
+};
+
+function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  );
+}
+
+function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
+  if (isErrorWithMessage(maybeError)) return maybeError;
+  try {
+    return new Error(JSON.stringify(maybeError));
+  } catch {
+    return new Error(String(maybeError));
+  }
+}
+
+function getErrorMessage(error: unknown): string {
+  return toErrorWithMessage(error).message;
+}
 
 export default function AdminPanel() {
   const router = useRouter();
@@ -17,6 +44,7 @@ export default function AdminPanel() {
   const [currentItem, setCurrentItem] = useState<Section | SubItem | null>(null);
   const [editingType, setEditingType] = useState<'section' | 'subitem'>('section');
   const [currentSectionId, setCurrentSectionId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'content' | 'contact'>('content');
 
   // Helper function to check if currentItem is a Section
   const isSection = (item: Section | SubItem | null): item is Section => {
@@ -29,15 +57,7 @@ export default function AdminPanel() {
   };
 
   const handleError = (err: unknown) => {
-    if (err instanceof Error) {
-      setError(err.message);
-    } else if (typeof err === 'string') {
-      setError(err);
-    } else if ((err as PostgrestError)?.message) {
-      setError((err as PostgrestError).message);
-    } else {
-      setError('An unknown error occurred');
-    }
+    setError(getErrorMessage(err));
   };
 
   async function checkAuth() {
@@ -261,18 +281,42 @@ export default function AdminPanel() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Portfolio Admin Panel</h1>
-        <button 
-          onClick={() => {
-            setEditingType('section');
-            setCurrentItem(null);
-            setIsDialogOpen(true);
-          }}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Add New Section
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => {
+              setEditingType('section');
+              setCurrentItem(null);
+              setIsDialogOpen(true);
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Add New Section
+          </button>
+        </div>
       </div>
-      
+
+      {/* Navigation Tabs */}
+      <div className="border-b mb-6">
+        <div className="flex gap-4">
+          <button
+            className={`py-2 px-4 -mb-px ${
+              activeTab === 'content' ? 'border-b-2 border-blue-500 font-medium' : ''
+            }`}
+            onClick={() => setActiveTab('content')}
+          >
+            Content
+          </button>
+          <button
+            className={`py-2 px-4 -mb-px ${
+              activeTab === 'contact' ? 'border-b-2 border-blue-500 font-medium' : ''
+            }`}
+            onClick={() => setActiveTab('contact')}
+          >
+            Contact Management
+          </button>
+        </div>
+      </div>
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -285,36 +329,40 @@ export default function AdminPanel() {
         </div>
       )}
 
-      <div className="space-y-4">
-        {sections.map((section) => (
-          <PortfolioSection
-            key={section.id}
-            section={section}
-            subItems={subItems[section.id] || []}
-            isExpanded={expandedSection === section.id}
-            onToggle={() => setExpandedSection(
-              expandedSection === section.id ? null : section.id
-            )}
-            onEditSection={(section) => {
-              setEditingType('section');
-              setCurrentItem(section);
-              setIsDialogOpen(true);
-            }}
-            onEditSubItem={(subItem) => {
-              setEditingType('subitem');
-              setCurrentItem(subItem);
-              setCurrentSectionId(section.id);
-              setIsDialogOpen(true);
-            }}
-            onAddSubItem={() => {
-              setEditingType('subitem');
-              setCurrentItem(null);
-              setCurrentSectionId(section.id);
-              setIsDialogOpen(true);
-            }}
-          />
-        ))}
-      </div>
+      {activeTab === 'content' ? (
+        <div className="space-y-4">
+          {sections.map((section) => (
+            <PortfolioSection
+              key={section.id}
+              section={section}
+              subItems={subItems[section.id] || []}
+              isExpanded={expandedSection === section.id}
+              onToggle={() => setExpandedSection(
+                expandedSection === section.id ? null : section.id
+              )}
+              onEditSection={(section) => {
+                setEditingType('section');
+                setCurrentItem(section);
+                setIsDialogOpen(true);
+              }}
+              onEditSubItem={(subItem) => {
+                setEditingType('subitem');
+                setCurrentItem(subItem);
+                setCurrentSectionId(section.id);
+                setIsDialogOpen(true);
+              }}
+              onAddSubItem={() => {
+                setEditingType('subitem');
+                setCurrentItem(null);
+                setCurrentSectionId(section.id);
+                setIsDialogOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <ContactManager />
+      )}
 
       <Dialog 
         open={isDialogOpen} 
@@ -416,4 +464,4 @@ export default function AdminPanel() {
       </Dialog>
     </div>
   );
-}
+} 
