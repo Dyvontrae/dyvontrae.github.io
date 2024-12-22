@@ -1,10 +1,10 @@
 import { PortfolioSection } from '../src/components/PortfolioSection'
 import { useState } from 'react'
-import { portfolioSections } from '../src/data/portfolioSections'
+import { portfolioSections, sectionSubItems } from '../src/data/portfolioSections'
 import { Settings } from 'lucide-react'
 import { Dialog, DialogContent } from '../src/components/ui/dialog'
+import type { SubItem } from '../src/types/portfolio'
 
-// Define interface for modal state
 interface ModalState {
   isOpen: boolean;
   type: string | null;
@@ -13,7 +13,7 @@ interface ModalState {
 }
 
 export default function Home() {
-  const [expandedSection, setExpandedSection] = useState<number | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [selectedModal, setSelectedModal] = useState<ModalState>({
     isOpen: false,
     type: null,
@@ -21,16 +21,16 @@ export default function Home() {
     content: null
   });
 
-  const handleToggle = (index: number) => {
-    setExpandedSection(expandedSection === index ? null : index);
+  const handleToggle = (id: string) => {
+    setExpandedSection(expandedSection === id ? null : id);
   };
 
-  const handleSubItemClick = (type: string, title: string, content: any) => {
+  const handleSubItemClick = (subItem: SubItem) => {
     setSelectedModal({
       isOpen: true,
-      type,
-      title,
-      content
+      type: subItem.type,
+      title: subItem.title,
+      content: subItem.content
     });
   };
 
@@ -72,13 +72,16 @@ export default function Home() {
           </div>
         </header>
         <div className="space-y-3">
-          {portfolioSections.map((section, index) => (
+          {portfolioSections.map((section) => (
             <PortfolioSection 
-              key={index}
+              key={section.id}
               section={section}
-              isExpanded={expandedSection === index}
-              onToggle={() => handleToggle(index)}
-              onSubItemClick={handleSubItemClick}
+              subItems={sectionSubItems[section.id] || []}
+              isExpanded={expandedSection === section.id}
+              onToggle={() => handleToggle(section.id)}
+              onEditSection={() => {}}
+              onEditSubItem={handleSubItemClick}
+              onAddSubItem={() => {}}
             />
           ))}
         </div>

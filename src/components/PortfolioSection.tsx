@@ -1,29 +1,32 @@
+// src/components/PortfolioSection.tsx
 import { ChevronDown } from 'lucide-react';
-import type { PortfolioSection } from '../data/portfolioSections';
+import { Section, SubItem } from '../types/portfolio';
 
-// Update interface to reflect that isExpanded is now a boolean comparison result
-// and onToggle no longer needs parameters (we handle that in the parent)
 interface PortfolioSectionProps {
-  section: PortfolioSection;
-  isExpanded: boolean;  // This is now computed in the parent (expandedSection === index)
-  onToggle: () => void; // Parent component will pass the index handling
-  onSubItemClick: (type: string, title: string, content: any) => void;
+  section: Section;
+  subItems: SubItem[];
+  isExpanded: boolean;
+  onToggle: () => void;
+  onEditSection: (section: Section) => void;
+  onEditSubItem: (subItem: SubItem) => void;
+  onAddSubItem: () => void;
 }
 
-// The component implementation stays largely the same since we moved the logic to the parent
 export function PortfolioSection({ 
-  section, 
+  section,
+  subItems, 
   isExpanded, 
-  onToggle, 
-  onSubItemClick 
+  onToggle,
+  onEditSection,
+  onEditSubItem,
+  onAddSubItem
 }: PortfolioSectionProps) {
   return (
     <div className="relative">
-      {/* Button remains the same as it just calls onToggle */}
       <button
         onClick={onToggle}
         className={`w-full bg-white/10 backdrop-blur-sm rounded-lg p-4 
-        border-l-4 ${section.color} hover:bg-white/15 transition-all
+        border-l-4 border-[${section.color}] hover:bg-white/15 transition-all
         shadow-lg text-white`}
       >
         <div className="flex items-center justify-between">
@@ -34,23 +37,28 @@ export function PortfolioSection({
               <p className="text-blue-200 text-sm">{section.description}</p>
             </div>
           </div>
-          {/* ChevronDown animation stays the same */}
           <ChevronDown className={`w-5 h-5 transition-transform ${
             isExpanded ? 'rotate-180' : ''
           }`} />
         </div>
       </button>
       
-      {/* Conditional rendering and subItems mapping stays the same */}
       {isExpanded && (
         <div className="mt-1 space-y-2">
-          {section.subItems.map((subItem, idx) => (
+          {subItems.map((subItem) => (
             <button
-              key={idx}
-              onClick={() => onSubItemClick(subItem.type, subItem.title, subItem.content)}
+              key={subItem.id}
+              onClick={() => onEditSubItem(subItem)}
               className="w-full bg-white/5 rounded-lg p-3 text-left text-white hover:bg-white/10"
             >
-              {subItem.title}
+              <div className="flex justify-between items-center">
+                <span>{subItem.title}</span>
+                {subItem.media_urls?.length > 0 && (
+                  <span className="text-xs text-blue-200">
+                    {subItem.media_urls.length} media items
+                  </span>
+                )}
+              </div>
             </button>
           ))}
         </div>
