@@ -1,5 +1,18 @@
-// src/data/portfolioSections.ts
-import type { Section, SubItem } from '../types/portfolio';
+import type { Section, SubItem, PortfolioItem } from '../types/portfolio';
+import type { MediaItem } from '@/components/MediaUpload';
+
+// Helper to create a media item
+const createMediaItem = (
+  url: string,
+  type: 'image' | 'youtube',
+  title: string,
+  description: string
+): MediaItem => ({
+  url,
+  type,
+  title,
+  description
+});
 
 export const portfolioSections: Section[] = [
     {
@@ -68,45 +81,18 @@ export const sectionSubItems: Record<string, SubItem[]> = {
             media_urls: ['/api/placeholder/320/320', '/api/placeholder/320/320'],
             media_types: ['image', 'image'],
             media_items: [
-                {
-                    url: '/api/placeholder/320/320',
-                    type: 'image',
-                    title: 'Housing Initiative',
-                    description: 'Working with local communities to ensure housing justice'
-                },
-                {
-                    url: '/api/placeholder/320/320',
-                    type: 'image',
-                    title: 'Community Support',
-                    description: 'Building networks of mutual aid and support'
-                }
-            ]
-        }
-    ],
-    'events': [
-        {
-            id: 'events-1',
-            section_id: 'events',
-            title: 'Past Events',
-            description: 'Previous events and gatherings',
-            type: 'gallery',
-            order_index: 0,
-            content: [
-                {
-                    title: 'Toku Taisen 2023',
-                    description: 'Annual tokusatsu celebration and community gathering',
-                    image: '/api/placeholder/320/320'
-                }
-            ],
-            media_urls: ['/api/placeholder/320/320'],
-            media_types: ['image'],
-            media_items: [
-                {
-                    url: '/api/placeholder/320/320',
-                    type: 'image',
-                    title: 'Toku Taisen 2023',
-                    description: 'Annual tokusatsu celebration and community gathering'
-                }
+                createMediaItem(
+                    '/api/placeholder/320/320',
+                    'image',
+                    'Housing Initiative',
+                    'Working with local communities to ensure housing justice'
+                ),
+                createMediaItem(
+                    '/api/placeholder/320/320',
+                    'image',
+                    'Community Support',
+                    'Building networks of mutual aid and support'
+                )
             ]
         }
     ],
@@ -133,20 +119,20 @@ export const sectionSubItems: Record<string, SubItem[]> = {
                 }
             ],
             media_urls: ['/api/placeholder/320/180', '/api/placeholder/320/180'],
-            media_types: ['video', 'video'],
+            media_types: ['youtube', 'youtube'],
             media_items: [
-                {
-                    url: '/api/placeholder/320/180',
-                    type: 'video',
-                    title: 'Latest Production',
-                    description: 'Latest video project showcasing community events'
-                },
-                {
-                    url: '/api/placeholder/320/180',
-                    type: 'video',
-                    title: 'Featured Content',
-                    description: 'Highlight reel of recent projects'
-                }
+                createMediaItem(
+                    'example1', // YouTube video ID
+                    'youtube',
+                    'Latest Production',
+                    'Latest video project showcasing community events'
+                ),
+                createMediaItem(
+                    'example2', // YouTube video ID
+                    'youtube',
+                    'Featured Content',
+                    'Highlight reel of recent projects'
+                )
             ]
         }
     ],
@@ -168,12 +154,12 @@ export const sectionSubItems: Record<string, SubItem[]> = {
             media_urls: ['/api/placeholder/320/320'],
             media_types: ['image'],
             media_items: [
-                {
-                    url: '/api/placeholder/320/320',
-                    type: 'image',
-                    title: 'Digital Art Collection',
-                    description: 'Recent digital art works and commissions'
-                }
+                createMediaItem(
+                    '/api/placeholder/320/320',
+                    'image',
+                    'Digital Art Collection',
+                    'Recent digital art works and commissions'
+                )
             ]
         }
     ],
@@ -195,12 +181,12 @@ export const sectionSubItems: Record<string, SubItem[]> = {
             media_urls: ['/api/placeholder/320/320'],
             media_types: ['image'],
             media_items: [
-                {
-                    url: '/api/placeholder/320/320',
-                    type: 'image',
-                    title: 'Web Development',
-                    description: 'Custom web solutions and applications'
-                }
+                createMediaItem(
+                    '/api/placeholder/320/320',
+                    'image',
+                    'Web Development',
+                    'Custom web solutions and applications'
+                )
             ]
         }
     ]

@@ -1,9 +1,9 @@
-import { PortfolioSection } from '../src/components/PortfolioSection'
-import { useState } from 'react'
-import { portfolioSections, sectionSubItems } from '../src/data/portfolioSections'
-import { Settings } from 'lucide-react'
-import { Dialog, DialogContent } from '../src/components/ui/dialog'
-import type { SubItem } from '../src/types/portfolio'
+import { useEffect, useState } from 'react';
+import { Settings } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { PortfolioSection } from '@/components/PortfolioSection';
+import { supabase } from '@/lib/supabase';
+import type { Section, SubItem } from '@/types/portfolio';
 
 interface ModalState {
   isOpen: boolean;
@@ -13,6 +13,9 @@ interface ModalState {
 }
 
 export default function Home() {
+  const [sections, setSections] = useState<Section[]>([]);
+  const [subItems, setSubItems] = useState<Record<string, SubItem[]>>({});
+  const [loading, setLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [selectedModal, setSelectedModal] = useState<ModalState>({
     isOpen: false,
@@ -20,6 +23,39 @@ export default function Home() {
     title: '',
     content: null
   });
+
+  async function fetchSectionsAndSubItems() {
+    try {
+      const { data: sectionsData, error: sectionsError } = await supabase
+        .from('sections')
+        .select('*')
+        .order('order_index');
+
+      if (sectionsError) throw sectionsError;
+      setSections(sectionsData || []);
+
+      const subItemsMap: Record<string, SubItem[]> = {};
+      for (const section of sectionsData || []) {
+        const { data: subItemsData, error: subItemsError } = await supabase
+          .from('sub_items')
+          .select('*')
+          .eq('section_id', section.id)
+          .order('order_index');
+
+        if (subItemsError) throw subItemsError;
+        subItemsMap[section.id] = subItemsData || [];
+      }
+      setSubItems(subItemsMap);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchSectionsAndSubItems();
+  }, []);
 
   const handleToggle = (id: string) => {
     setExpandedSection(expandedSection === id ? null : id);
@@ -42,6 +78,16 @@ export default function Home() {
       content: null
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#001830] flex items-center justify-center">
+        <div className="bg-white/10 text-white px-6 py-3 rounded-lg">
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#001830] p-4">
@@ -71,12 +117,13 @@ export default function Home() {
             CREATOR • ORGANIZER • DEVELOPER
           </div>
         </header>
+
         <div className="space-y-3">
-          {portfolioSections.map((section) => (
+          {sections.map((section) => (
             <PortfolioSection 
               key={section.id}
               section={section}
-              subItems={sectionSubItems[section.id] || []}
+              subItems={subItems[section.id] || []}
               isExpanded={expandedSection === section.id}
               onToggle={() => handleToggle(section.id)}
               onEditSection={() => {}}

@@ -1,3 +1,5 @@
+import type { MediaItem } from '@/components/MediaUpload';
+
 export interface PortfolioItem {
     title: string;
     description: string;
@@ -25,10 +27,5 @@ export interface SubItem {
     media_urls: string[];
     media_types: string[];
     order_index: number;
-    media_items: {
-        url: string;
-        type: string;
-        title?: string;
-        description?: string;
-    }[];
+    media_items: MediaItem[];
 }

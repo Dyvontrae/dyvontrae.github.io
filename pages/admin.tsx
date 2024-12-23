@@ -1,16 +1,27 @@
-// pages/admin.tsx
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
-import { Dialog } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PortfolioSection } from '@/components/PortfolioSection';
 import ContactManager from '@/components/ContactManager';
 import type { Section, SubItem } from '@/types/portfolio';
 import { Header } from '@/components/layout/Header';
+import { MediaUpload } from '@/components/MediaUpload';
+import type { MediaItem } from '@/components/MediaUpload';
 
 type ErrorWithMessage = {
   message: string;
 };
+
+interface FormState {
+  title: string;
+  description: string;
+  icon?: string;
+  color?: string;
+  order_index?: number;
+  media_items?: MediaItem[];
+  section_id?: string;
+}
 
 function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   return (
@@ -46,6 +57,15 @@ export default function AdminPanel() {
   const [editingType, setEditingType] = useState<'section' | 'subitem'>('section');
   const [currentSectionId, setCurrentSectionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'content' | 'contact'>('content');
+  
+  // Form state
+  const [formData, setFormData] = useState<FormState>({
+    title: '',
+    description: '',
+    icon: '',
+    color: '#000000',
+    media_items: []
+  });
 
   // Helper function to check if currentItem is a Section
   const isSection = (item: Section | SubItem | null): item is Section => {
@@ -56,6 +76,42 @@ export default function AdminPanel() {
   const isSubItem = (item: Section | SubItem | null): item is SubItem => {
     return item !== null && 'section_id' in item && 'media_urls' in item;
   };
+
+  // Reset form to initial state
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      icon: '',
+      color: '#000000',
+      media_items: []
+    });
+  };
+
+  // Initialize form data when currentItem changes
+  useEffect(() => {
+    if (currentItem) {
+      if (isSection(currentItem)) {
+        setFormData({
+          title: currentItem.title,
+          description: currentItem.description,
+          icon: currentItem.icon,
+          color: currentItem.color,
+          order_index: currentItem.order_index
+        });
+      } else if (isSubItem(currentItem)) {
+        setFormData({
+          title: currentItem.title,
+          description: currentItem.description,
+          media_items: currentItem.media_items || [],
+          order_index: currentItem.order_index,
+          section_id: currentItem.section_id
+        });
+      }
+    } else {
+      resetForm();
+    }
+  }, [currentItem]);
 
   const handleError = (err: unknown) => {
     setError(getErrorMessage(err));
@@ -80,23 +136,30 @@ export default function AdminPanel() {
     try {
       const isAuthenticated = await checkAuth();
       if (!isAuthenticated) return;
-
+  
+      // Fetch sections
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('sections')
         .select('*')
         .order('order_index');
-
+  
       if (sectionsError) throw sectionsError;
       setSections(sectionsData || []);
-
+  
+      // Fetch subitems with explicit selection of media_items
       const subItemsMap: Record<string, SubItem[]> = {};
       for (const section of sectionsData || []) {
         const { data: subItemsData, error: subItemsError } = await supabase
           .from('sub_items')
-          .select('*')
+          .select(`
+            *,
+            media_items
+          `)
           .eq('section_id', section.id)
           .order('order_index');
-
+  
+        console.log('Fetched SubItems for section', section.id, ':', subItemsData);
+  
         if (subItemsError) throw subItemsError;
         subItemsMap[section.id] = subItemsData || [];
       }
@@ -107,7 +170,7 @@ export default function AdminPanel() {
       setLoading(false);
     }
   }
-
+  
   async function handleCreateSection(newSection: Omit<Section, 'id'>) {
     try {
       const { data, error } = await supabase
@@ -148,8 +211,7 @@ export default function AdminPanel() {
     try {
       const subItemData = {
         ...newSubItem,
-        section_id: sectionId,
-        media_items: [] as { url: string; type: string; title?: string; description?: string; }[]
+        section_id: sectionId
       };
 
       const { data, error } = await supabase
@@ -172,14 +234,9 @@ export default function AdminPanel() {
 
   async function handleUpdateSubItem(id: string, updates: Partial<SubItem>) {
     try {
-      const subItemUpdates = {
-        ...updates,
-        media_items: updates.media_items || []
-      };
-
       const { data, error } = await supabase
         .from('sub_items')
-        .update(subItemUpdates)
+        .update(updates)
         .eq('id', id)
         .select()
         .single();
@@ -232,12 +289,17 @@ export default function AdminPanel() {
     }
   }
 
-  async function handleSave(formData: any) {
+  async function handleFormSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    
     try {
       if (editingType === 'section') {
         const sectionData = {
-          ...formData,
-          order_index: parseInt(formData.order_index) || sections.length
+          title: formData.title,
+          description: formData.description,
+          icon: formData.icon || '',
+          color: formData.color || '#000000',
+          order_index: formData.order_index || sections.length
         };
 
         if (isSection(currentItem)) {
@@ -246,23 +308,33 @@ export default function AdminPanel() {
           await handleCreateSection(sectionData);
         }
       } else {
+        if (!currentSectionId) {
+          throw new Error('No section ID provided for sub-item');
+        }
+
         const subItemData = {
-          ...formData,
-          order_index: parseInt(formData.order_index) || (subItems[currentSectionId || '']?.length || 0),
-          media_urls: [],
-          media_types: [],
-          media_items: []
+          title: formData.title,
+          description: formData.description,
+          order_index: formData.order_index || (subItems[currentSectionId]?.length || 0),
+          media_items: formData.media_items || [],
+          section_id: currentSectionId,
+          content: [], // Required by SubItem interface
+          type: 'gallery' as const, // Default to gallery
+          media_urls: formData.media_items?.map(item => item.url) || [], // Convert media_items to urls
+          media_types: formData.media_items?.map(item => item.type) || [] // Convert media_items to types
         };
 
         if (isSubItem(currentItem)) {
           await handleUpdateSubItem(currentItem.id, subItemData);
-        } else if (currentSectionId) {
+        } else {
           await handleCreateSubItem(currentSectionId, subItemData);
         }
       }
+      
       setIsDialogOpen(false);
       setCurrentItem(null);
       setCurrentSectionId(null);
+      resetForm();
       await fetchSectionsAndSubItems();
     } catch (err) {
       handleError(err);
@@ -279,192 +351,187 @@ export default function AdminPanel() {
   }
 
   return (
-   <>  
-    <Header />
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Portfolio Admin Panel</h1>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => {
-              setEditingType('section');
-              setCurrentItem(null);
-              setIsDialogOpen(true);
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Add New Section
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="border-b mb-6">
-        <div className="flex gap-4">
-          <button
-            className={`py-2 px-4 -mb-px ${
-              activeTab === 'content' ? 'border-b-2 border-blue-500 font-medium' : ''
-            }`}
-            onClick={() => setActiveTab('content')}
-          >
-            Content
-          </button>
-          <button
-            className={`py-2 px-4 -mb-px ${
-              activeTab === 'contact' ? 'border-b-2 border-blue-500 font-medium' : ''
-            }`}
-            onClick={() => setActiveTab('contact')}
-          >
-            Contact Management
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-          <button 
-            onClick={() => setError(null)} 
-            className="float-right text-red-700 hover:text-red-900"
-          >
-            ×
-          </button>
-        </div>
-      )}
-
-      {activeTab === 'content' ? (
-        <div className="space-y-4">
-          {sections.map((section) => (
-            <PortfolioSection
-              key={section.id}
-              section={section}
-              subItems={subItems[section.id] || []}
-              isExpanded={expandedSection === section.id}
-              onToggle={() => setExpandedSection(
-                expandedSection === section.id ? null : section.id
-              )}
-              onEditSection={(section) => {
+    <>  
+      <Header />
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Portfolio Admin Panel</h1>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
                 setEditingType('section');
-                setCurrentItem(section);
-                setIsDialogOpen(true);
-              }}
-              onEditSubItem={(subItem) => {
-                setEditingType('subitem');
-                setCurrentItem(subItem);
-                setCurrentSectionId(section.id);
-                setIsDialogOpen(true);
-              }}
-              onAddSubItem={() => {
-                setEditingType('subitem');
                 setCurrentItem(null);
-                setCurrentSectionId(section.id);
                 setIsDialogOpen(true);
               }}
-            />
-          ))}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Add New Section
+            </button>
+          </div>
         </div>
-      ) : (
-        <ContactManager />
-      )}
 
-      <Dialog 
-        open={isDialogOpen} 
-        onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) {
-            setCurrentItem(null);
-            setCurrentSectionId(null);
-          }
-        }}
-      >
-        <div className="p-6">
-          <h2 className="text-xl font-bold mb-4">
-            {currentItem ? 'Edit' : 'Create'} {editingType === 'section' ? 'Section' : 'Sub Item'}
-          </h2>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const data = Object.fromEntries(formData.entries());
-            handleSave(data);
-          }}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                  name="title"
-                  defaultValue={currentItem?.title || ''}
-                  className="w-full px-3 py-2 border rounded"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  name="description"
-                  defaultValue={currentItem?.description || ''}
-                  className="w-full px-3 py-2 border rounded"
-                  rows={3}
-                  required
-                />
-              </div>
+        <div className="border-b mb-6">
+          <div className="flex gap-4">
+            <button
+              className={`py-2 px-4 -mb-px ${
+                activeTab === 'content' ? 'border-b-2 border-blue-500 font-medium' : ''
+              }`}
+              onClick={() => setActiveTab('content')}
+            >
+              Content
+            </button>
+            <button
+              className={`py-2 px-4 -mb-px ${
+                activeTab === 'contact' ? 'border-b-2 border-blue-500 font-medium' : ''
+              }`}
+              onClick={() => setActiveTab('contact')}
+            >
+              Contact Management
+            </button>
+          </div>
+        </div>
 
-              {editingType === 'section' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Icon</label>
-                    <input
-                      name="icon"
-                      defaultValue={isSection(currentItem) ? currentItem.icon : ''}
-                      className="w-full px-3 py-2 border rounded"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Color</label>
-                    <input
-                      type="color"
-                      name="color"
-                      defaultValue={isSection(currentItem) ? currentItem.color : '#000000'}
-                      className="w-full"
-                    />
-                  </div>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+            <button 
+              onClick={() => setError(null)} 
+              className="float-right text-red-700 hover:text-red-900"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
+        {activeTab === 'content' ? (
+          <div className="space-y-4">
+            {sections.map((section) => (
+              <PortfolioSection
+                key={section.id}
+                section={section}
+                subItems={subItems[section.id] || []}
+                isExpanded={expandedSection === section.id}
+                onToggle={() => setExpandedSection(
+                  expandedSection === section.id ? null : section.id
+                )}
+                onEditSection={(section) => {
+                  setEditingType('section');
+                  setCurrentItem(section);
+                  setIsDialogOpen(true);
+                }}
+                onEditSubItem={(subItem) => {
+                  setEditingType('subitem');
+                  setCurrentItem(subItem);
+                  setCurrentSectionId(section.id);
+                  setIsDialogOpen(true);
+                }}
+                onAddSubItem={() => {
+                  setEditingType('subitem');
+                  setCurrentItem(null);
+                  setCurrentSectionId(section.id);
+                  setIsDialogOpen(true);
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <ContactManager />
+        )}
+
+        <Dialog 
+          open={isDialogOpen} 
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setCurrentItem(null);
+              setCurrentSectionId(null);
+              resetForm();
+            }
+          }}
+        >
+          <DialogContent className="bg-gray-900 text-white border-gray-800">
+            <DialogHeader>
+              <DialogTitle>
+                {currentItem ? 'Edit' : 'Create'} {editingType === 'section' ? 'Section' : 'Sub Item'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="p-6">
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Title</label>
                   <input
-                    type="hidden"
-                    name="order_index"
-                    value={currentItem?.order_index || sections.length}
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded bg-gray-800 text-white"
+                    required
                   />
-                </>
-              )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded bg-gray-800 text-white"
+                    rows={3}
+                    required
+                  />
+                </div>
 
-              {editingType === 'subitem' && (
-                <input
-                  type="hidden"
-                  name="order_index"
-                  value={currentItem?.order_index || (subItems[currentSectionId || '']?.length || 0)}
-                />
-              )}
+                {editingType === 'subitem' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Media</label>
+                    <MediaUpload
+                      mediaItems={formData.media_items || []}
+                      onMediaChange={(items) => setFormData(prev => ({ ...prev, media_items: items }))}
+                      maxFiles={10}
+                    />
+                  </div>
+                )}
 
-              <div className="flex justify-end gap-2 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsDialogOpen(false)}
-                  className="px-4 py-2 border rounded hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Save
-                </button>
-              </div>
+                {editingType === 'section' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Icon</label>
+                      <input
+                        value={formData.icon || ''}
+                        onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                        className="w-full px-3 py-2 border rounded bg-gray-800 text-white"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Color</label>
+                      <input
+                        type="color"
+                        value={formData.color || '#000000'}
+                        onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                        className="w-full"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex justify-end gap-2 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setIsDialogOpen(false)}
+                    className="px-4 py-2 border rounded hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
-      </Dialog>
-    </div></>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   );
-} 
+}
