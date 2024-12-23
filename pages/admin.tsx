@@ -6,6 +6,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { PortfolioSection } from '@/components/PortfolioSection';
 import ContactManager from '@/components/ContactManager';
 import type { Section, SubItem } from '@/types/portfolio';
+import { Header } from '@/components/layout/Header';
 
 type ErrorWithMessage = {
   message: string;
@@ -278,6 +279,8 @@ export default function AdminPanel() {
   }
 
   return (
+   <>  
+    <Header />
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Portfolio Admin Panel</h1>
@@ -462,6 +465,6 @@ export default function AdminPanel() {
           </form>
         </div>
       </Dialog>
-    </div>
+    </div></>
   );
 } 

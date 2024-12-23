@@ -1,6 +1,6 @@
-// src/components/PortfolioSection.tsx
 import { ChevronDown } from 'lucide-react';
-import { Section, SubItem } from '../types/portfolio';
+import { Section, SubItem } from '@/types/portfolio';
+import { MarkdownDisplay } from '@/components/MarkdownDisplay';
 
 interface PortfolioSectionProps {
   section: Section;
@@ -34,7 +34,9 @@ export function PortfolioSection({
             <span className="text-2xl">{section.icon}</span>
             <div>
               <h2 className="text-xl font-semibold">{section.title}</h2>
-              <p className="text-blue-200 text-sm">{section.description}</p>
+              <div className="text-blue-200 text-sm">
+                <MarkdownDisplay content={section.description} />
+              </div>
             </div>
           </div>
           <ChevronDown className={`w-5 h-5 transition-transform ${

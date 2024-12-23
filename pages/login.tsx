@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { Header } from '@/components/layout/Header';
 
 
 
@@ -31,6 +32,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <Header />
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold">Portfolio Admin</h1>
