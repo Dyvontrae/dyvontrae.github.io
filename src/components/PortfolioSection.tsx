@@ -60,41 +60,68 @@ export function PortfolioSection({
         setIsModalOpen(true);
     };  
 
- const renderModalContent = (subItem: SubItem) => {
-  if (!subItem.media_items?.length) {
-    return <p className="text-gray-400">No media content available</p>;
-  }
-
-  // Transform the media items to match expected Gallery component types
-  const transformedMediaItems: MediaItem[] = subItem.media_items
-    .filter(item => item.url) // Ensure we have a valid URL
-    .map(item => ({
-      url: item.url,
-      // Default to 'image' type for files since that's what we're uploading
-      type: 'image',
-      title: item.title || '',
-      description: item.description || '',
-      storagePath: item.storagePath
-    }));
-
-  console.log('Transformed media items:', transformedMediaItems);
-
-  if (subItem.type === 'youtube') {
-    return (
-      <div className="space-y-4">
-        {transformedMediaItems.map((item, index) => (
-          <VideoEmbed 
-            key={index}
-            videoId={item.url}
-            title={item.title}
-          />
-        ))}
-      </div>
-    );
-  }
-
-  return <Gallery items={transformedMediaItems} />;
-};
+    const renderModalContent = (subItem: SubItem) => {
+      console.log('Rendering modal for subItem:', subItem);
+      
+      if (!subItem.media_items?.length) {
+        return <p className="text-gray-400">No media content available</p>;
+      }
+    
+      // Transform the media items to match expected format
+      const transformedMediaItems: MediaItem[] = subItem.media_items
+        .filter(item => item.url) // Ensure we have a valid URL
+        .map(item => {
+          // Check if this is a YouTube URL/ID
+          const isYouTube = 
+            subItem.type === 'youtube' || 
+            item.type === 'youtube' ||
+            (typeof item.url === 'string' && (
+              item.url.includes('youtube.com') || 
+              item.url.includes('youtu.be')
+            ));
+    
+          console.log('Processing item:', item);
+          console.log('Is YouTube?', isYouTube);
+    
+          return {
+            url: item.url,
+            type: isYouTube ? 'youtube' : 'image',
+            title: item.title || '',
+            description: item.description || '',
+            storagePath: item.storagePath
+          };
+        });
+    
+      console.log('Transformed media items:', transformedMediaItems);
+    
+      // If any item is YouTube, render video embeds
+      const hasYouTubeItems = transformedMediaItems.some(item => item.type === 'youtube');
+      if (hasYouTubeItems || subItem.type === 'youtube') {
+        return (
+          <div className="space-y-4">
+            {transformedMediaItems.map((item, index) => (
+              item.type === 'youtube' ? (
+                <VideoEmbed 
+                  key={index}
+                  videoId={item.url}
+                  title={item.title}
+                />
+              ) : (
+                <img 
+                  key={index}
+                  src={item.url}
+                  alt={item.title || ''}
+                  className="w-full rounded-lg"
+                />
+              )
+            ))}
+          </div>
+        );
+      }
+    
+      // If no YouTube items, use Gallery component
+      return <Gallery items={transformedMediaItems} />;
+    };
 
   return (
     <div className="relative">
