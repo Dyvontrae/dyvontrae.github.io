@@ -13,7 +13,7 @@ interface PortfolioSectionProps {
   isExpanded: boolean;
   onToggle: () => void;
   onEditSection?: (section: Section) => void;
-  onEditSubItem: (subItem: SubItem) => void;
+  onEditSubItem?: (subItem: SubItem) => void;
   onAddSubItem?: () => void;
 }
 
@@ -128,8 +128,8 @@ export function PortfolioSection({
       <button
         onClick={onToggle}
         className={`w-full bg-white/10 backdrop-blur-sm rounded-lg p-4 
-        border-l-4 border-[${section.color}] hover:bg-white/15 transition-all
-        shadow-lg text-white`}
+border-l-4 border-[${section.color}] hover:bg-white/15 transition-all
+shadow-lg text-white backdrop-saturate-150`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

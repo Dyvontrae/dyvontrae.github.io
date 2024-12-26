@@ -1,28 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Settings } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { PortfolioSection } from '@/components/PortfolioSection';
+import { VideoBackground } from '@/components/VideoBackground';
 import { supabase } from '@/lib/supabase';
 import type { Section, SubItem } from '@/types/portfolio';
-
-interface ModalState {
-  isOpen: boolean;
-  type: string | null;
-  title: string;
-  content: any;
-}
 
 export default function Home() {
   const [sections, setSections] = useState<Section[]>([]);
   const [subItems, setSubItems] = useState<Record<string, SubItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [selectedModal, setSelectedModal] = useState<ModalState>({
-    isOpen: false,
-    type: null,
-    title: '',
-    content: null
-  });
 
   async function fetchSectionsAndSubItems() {
     try {
@@ -38,7 +25,10 @@ export default function Home() {
       for (const section of sectionsData || []) {
         const { data: subItemsData, error: subItemsError } = await supabase
           .from('sub_items')
-          .select('*')
+          .select(`
+            *,
+            media_items
+          `)
           .eq('section_id', section.id)
           .order('order_index');
 
@@ -61,24 +51,6 @@ export default function Home() {
     setExpandedSection(expandedSection === id ? null : id);
   };
 
-  const handleSubItemClick = (subItem: SubItem) => {
-    setSelectedModal({
-      isOpen: true,
-      type: subItem.type,
-      title: subItem.title,
-      content: subItem.content
-    });
-  };
-
-  const closeModal = () => {
-    setSelectedModal({
-      isOpen: false,
-      type: null,
-      title: '',
-      content: null
-    });
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#001830] flex items-center justify-center">
@@ -90,7 +62,9 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#001830] p-4">
+    <main className="min-h-screen bg-[#001830]/80 backdrop-blur-lg p-4">
+      <VideoBackground />
+      
       {/* Admin Navigation */}
       <div className="absolute top-4 right-4 z-50">
         <button 
@@ -126,55 +100,10 @@ export default function Home() {
               subItems={subItems[section.id] || []}
               isExpanded={expandedSection === section.id}
               onToggle={() => handleToggle(section.id)}
-              onEditSection={() => {}}
-              onEditSubItem={handleSubItemClick}
-              onAddSubItem={() => {}}
             />
           ))}
         </div>
       </div>
-
-      {/* Modal */}
-      <Dialog open={selectedModal.isOpen} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="bg-[#001830] text-white border-blue-400">
-          {selectedModal.isOpen && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">{selectedModal.title}</h2>
-              {/* Render content based on type */}
-              {selectedModal.type === 'gallery' && (
-                <div className="grid grid-cols-2 gap-4">
-                  {Array.isArray(selectedModal.content) && selectedModal.content.map((item, idx) => (
-                    <div key={idx} className="bg-white/10 rounded-lg p-4">
-                      <img src={item.image} alt={item.title} className="w-full rounded-lg mb-2" />
-                      <h3 className="font-semibold">{item.title}</h3>
-                      <p className="text-sm text-gray-300">{item.description}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {selectedModal.type === 'youtube' && (
-                <div className="grid grid-cols-2 gap-4">
-                  {Array.isArray(selectedModal.content) && selectedModal.content.map((video, idx) => (
-                    <div key={idx} className="bg-white/10 rounded-lg overflow-hidden">
-                      <div className="relative">
-                        <img 
-                          src={video.thumbnail}
-                          alt={video.title}
-                          className="w-full rounded-t-lg"
-                        />
-                        <div className="p-4">
-                          <h3 className="font-semibold mb-2">{video.title}</h3>
-                          <p className="text-sm text-gray-300">{video.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }
