@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { supabase } from '@/lib/supabase';
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,11 +11,23 @@ export default async function handler(
   }
 
   try {
+    // Get API key from Supabase
+    const { data: config } = await supabase
+      .from('config')
+      .select('value')
+      .eq('key', 'RESEND_API_KEY')
+      .single();
+
+    if (!config?.value) {
+      throw new Error('API key not found');
+    }
+
+    const resend = new Resend(config.value);
     const { name, email, subject, message } = req.body;
 
     const { data, error } = await resend.emails.send({
       from: 'Portfolio Contact <onboarding@resend.dev>',
-      to: 'your-email@example.com', // Replace with your email
+      to: 'dyvontrae@gmail.com',
       subject: `Portfolio Contact: ${subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
