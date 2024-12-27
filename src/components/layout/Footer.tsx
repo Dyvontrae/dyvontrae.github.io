@@ -1,6 +1,6 @@
-// src/components/layout/Footer.tsx
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, MessageSquare, LinkedinIcon, YoutubeIcon } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function Footer() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -19,17 +19,26 @@ export default function Footer() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/send-notification-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      // Save message to contact_messages table
+      const { data: messageData, error: dbError } = await supabase
+        .from('contact_messages')
+        .insert([{
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message
+        }])
+        .select()
+        .single();
+
+      if (dbError) throw dbError;
+
+      // Trigger email via Edge Function
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: { messageId: messageData.id }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
+      if (emailError) throw emailError;
 
       setFormData({
         name: '',
@@ -38,6 +47,7 @@ export default function Footer() {
         message: ''
       });
     } catch (err) {
+      console.error('Error:', err);
       setError('Failed to send message. Please try again later.');
     } finally {
       setIsSubmitting(false);
