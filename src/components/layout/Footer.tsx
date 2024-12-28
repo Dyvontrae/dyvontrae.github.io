@@ -15,44 +15,28 @@ export default function Footer() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-
     try {
-      // Save message to contact_messages table
-      const { data: messageData, error: dbError } = await supabase
+      const { data: categoryData } = await supabase
+        .from('contact_categories')
+        .select('notification_email')
+        .eq('name', formData.subject)
+        .single();
+  
+      const { error } = await supabase
         .from('contact_messages')
         .insert([{
-          name: formData.name,
-          email: formData.email,
-          subject: formData.subject,
-          message: formData.message
-        }])
-        .select()
-        .single();
-
-      if (dbError) throw dbError;
-
-      // Trigger email via Edge Function
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: { messageId: messageData.id }
-      });
-
-      if (emailError) throw emailError;
-
-      setFormData({
-        name: '',
-        email: '',
-        subject: 'Commissions',
-        message: ''
-      });
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Failed to send message. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
+          ...formData,
+          notification_email: categoryData?.notification_email
+        }]);
+  
+      if (error) throw error;
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      alert('Message sent successfully!');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to send message');
     }
-  };
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
