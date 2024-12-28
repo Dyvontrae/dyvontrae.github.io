@@ -15,28 +15,62 @@ export default function Footer() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
     try {
-      const { data: categoryData } = await supabase
+      // 1. Get notification email from category
+      const { data: categoryData, error: categoryError } = await supabase
         .from('contact_categories')
         .select('notification_email')
         .eq('name', formData.subject)
         .single();
-  
-      const { error } = await supabase
+
+      if (categoryError) throw categoryError;
+
+      // 2. Insert into database
+      const { error: dbError } = await supabase
         .from('contact_messages')
         .insert([{
           ...formData,
           notification_email: categoryData?.notification_email
         }]);
-  
-      if (error) throw error;
-      setFormData({ name: '', email: '', subject: '', message: '' });
+
+      if (dbError) throw dbError;
+
+      // 3. Call Edge Function using Supabase client
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        'send-notification-email',
+        {
+          body: {
+            ...formData,
+            notification_email: categoryData?.notification_email
+          }
+        }
+      );
+
+      if (functionError) {
+        console.error('Edge Function error:', functionError);
+      } else {
+        console.log('Edge Function response:', functionData);
+      }
+
+      // Reset form regardless of email notification success
+      setFormData({
+        name: '',
+        email: '',
+        subject: 'Commissions',
+        message: ''
+      });
       alert('Message sent successfully!');
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to send message');
+      
+    } catch (err) {
+      console.error('Form submission error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-};
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
