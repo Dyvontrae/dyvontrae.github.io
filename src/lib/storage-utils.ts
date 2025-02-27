@@ -47,7 +47,7 @@ export async function uploadMediaFile(
 
   try {
     const { error: uploadError } = await supabase.storage
-      .from('media')
+      .from('portfolio_media')
       .upload(filePath, file);
 
     if (uploadError) {
@@ -55,7 +55,7 @@ export async function uploadMediaFile(
     }
 
     const { data: { publicUrl } } = supabase.storage
-      .from('media')
+      .from('portfolio_media')
       .getPublicUrl(filePath);
 
     return {
@@ -73,7 +73,7 @@ export async function uploadMediaFile(
 export async function deleteMediaFile(path: string): Promise<void> {
   try {
     const { error } = await supabase.storage
-      .from('media')
+      .from('portfolio_media')
       .remove([path]);
 
     if (error) {
