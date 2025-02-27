@@ -474,8 +474,6 @@ export default function AdminPanel() {
           order_index: formData.order_index || (subItems[currentSectionId]?.length || 0),
           media_items: formData.media_items || [],
           section_id: currentSectionId,
-          content: [], 
-          type: 'gallery' as const,
           media_urls: formData.media_items?.map((item: MediaItem) => item.url) || [],
           media_types: formData.media_items?.map((item: MediaItem) => item.type) || []
         };

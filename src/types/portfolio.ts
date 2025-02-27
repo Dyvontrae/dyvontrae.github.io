@@ -22,8 +22,8 @@ export interface SubItem {
     section_id: string;
     title: string;
     description: string;
-    content: PortfolioItem[];
-    type: 'gallery' | 'youtube';
+    content?: PortfolioItem[];
+    type?: 'gallery' | 'youtube';
     media_urls: string[];
     media_types: string[];
     order_index: number;
