@@ -1,17 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Section, SubItem } from '@/types/portfolio';
+import { MediaUpload } from '@/components/MediaUpload';
+import type { Section, SubItem } from '@/types/portfolio';
+import type { MediaItem } from '@/components/MediaUpload';
 import { RichTextEditor } from './RichTextEditor';
+
+// Define a type that encompasses all possible properties
+type FormDataType = {
+  title: string;
+  description: string;
+  icon?: string;
+  color?: string;
+  order_index?: number;
+  media_items?: MediaItem[];
+  section_id?: string;
+  media_urls?: string[];
+  media_types?: string[];
+  content?: any[];
+  type?: string;
+  [key: string]: any; // Allow any additional properties
+};
 
 interface SectionEditorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (section: any) => Promise<void>;
+  onSave: (section: FormDataType) => Promise<void>;
   initialData?: Section | SubItem | null;
   type: 'section' | 'subitem';
-  sectionId?: string;
+  sectionId?: string | null;
 }
 
 export default function SectionEditor({
@@ -22,18 +40,65 @@ export default function SectionEditor({
   type,
   sectionId
 }: SectionEditorProps) {
-  const [formData, setFormData] = useState(
-    initialData || {
-      title: '',
-      description: '',
-      icon: '',
-      color: '#000000',
-      order_index: 0,
-      media_urls: [],
-      media_types: [],
-      media_items: []
+  // Initialize form data with proper typing
+  const [formData, setFormData] = useState<FormDataType>({
+    title: '',
+    description: '',
+    icon: '',
+    color: '#000000',
+    order_index: 0,
+    media_urls: [],
+    media_types: [],
+    media_items: []
+  });
+
+  // Update formData when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      // Create a clean object with all needed properties
+      const newFormData: FormDataType = {
+        title: initialData.title || '',
+        description: initialData.description || '',
+        order_index: 'order_index' in initialData ? initialData.order_index : 0
+      };
+
+      // Add section-specific properties
+      if ('icon' in initialData) {
+        newFormData.icon = initialData.icon;
+      }
+      if ('color' in initialData) {
+        newFormData.color = initialData.color;
+      }
+
+      // Add subitem-specific properties
+      if ('section_id' in initialData) {
+        newFormData.section_id = initialData.section_id;
+      }
+      if ('media_items' in initialData) {
+        newFormData.media_items = initialData.media_items || [];
+      }
+      if ('media_urls' in initialData) {
+        newFormData.media_urls = initialData.media_urls;
+      }
+      if ('media_types' in initialData) {
+        newFormData.media_types = initialData.media_types;
+      }
+
+      setFormData(newFormData);
+    } else {
+      // Reset to defaults when there's no initialData
+      setFormData({
+        title: '',
+        description: '',
+        icon: '',
+        color: '#000000',
+        order_index: 0,
+        media_urls: [],
+        media_types: [],
+        media_items: []
+      });
     }
-  );
+  }, [initialData]);
 
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,11 +109,11 @@ export default function SectionEditor({
     setUploading(true);
     
     try {
-      if (!formData.title.trim()) {
+      if (!formData.title || !formData.title.trim()) {
         throw new Error('Title is required');
       }
       
-      if (!formData.description.trim()) {
+      if (!formData.description || !formData.description.trim()) {
         throw new Error('Description is required');
       }
 
@@ -86,11 +151,11 @@ export default function SectionEditor({
           <div>
             <label className="block text-sm font-medium mb-1">Description</label>
             <RichTextEditor
-                value={formData.description}
-                onChange={(value) => setFormData({...formData, description: value})}
-                placeholder="Enter description... (Markdown supported)"
-                error={error || undefined}  // Convert null to undefined
-                />
+              value={formData.description}
+              onChange={(value) => setFormData({...formData, description: value})}
+              placeholder="Enter description... (Markdown supported)"
+              error={error || undefined}
+            />
           </div>
 
           {type === 'section' && (
@@ -98,7 +163,7 @@ export default function SectionEditor({
               <div>
                 <label className="block text-sm font-medium mb-1">Icon</label>
                 <Input
-                  value={'icon' in formData ? formData.icon : ''}
+                  value={formData.icon || ''}
                   onChange={(e) => setFormData({...formData, icon: e.target.value})}
                   className="bg-gray-800 border-gray-700 text-white"
                   placeholder="Enter emoji or icon..."
@@ -110,7 +175,7 @@ export default function SectionEditor({
                 <div className="flex gap-2 items-center">
                   <Input
                     type="color"
-                    value={'color' in formData ? formData.color : '#000000'}
+                    value={formData.color || '#000000'}
                     onChange={(e) => setFormData({...formData, color: e.target.value})}
                     className="h-10 p-1 bg-gray-800 border-gray-700 w-20"
                   />
@@ -120,6 +185,17 @@ export default function SectionEditor({
                 </div>
               </div>
             </>
+          )}
+
+          {type === 'subitem' && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Media</label>
+              <MediaUpload
+                mediaItems={formData.media_items || []}
+                onMediaChange={(items) => setFormData({...formData, media_items: items})}
+                maxFiles={10}
+              />
+            </div>
           )}
 
           {error && (

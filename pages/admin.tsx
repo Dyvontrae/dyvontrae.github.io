@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PortfolioSection } from '@/components/PortfolioSection';
 import ContactManager from '@/components/ContactManager';
 import type { Section, SubItem } from '@/types/portfolio';
 import { Header } from '@/components/layout/Header';
-import { MediaUpload } from '@/components/MediaUpload';
 import type { MediaItem } from '@/components/MediaUpload';
+import SectionEditor from '@/components/SectionEditor';
+
 
 type ErrorWithMessage = {
   message: string;
@@ -437,100 +437,66 @@ export default function AdminPanel() {
         ) : (
           <ContactManager />
         )}
+<SectionEditor
+  open={isDialogOpen}
+  onOpenChange={(open) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setCurrentItem(null);
+      setCurrentSectionId(null);
+      resetForm();
+    }
+  }}
+  onSave={async (formData) => {
+    try {
+      if (editingType === 'section') {
+        const sectionData = {
+          title: formData.title,
+          description: formData.description,
+          icon: formData.icon || '',
+          color: formData.color || '#000000',
+          order_index: formData.order_index || sections.length
+        };
 
-        <Dialog 
-          open={isDialogOpen} 
-          onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setCurrentItem(null);
-              setCurrentSectionId(null);
-              resetForm();
-            }
-          }}
-        >
-          <DialogContent className="bg-gray-900 text-white border-gray-800">
-            <DialogHeader>
-              <DialogTitle>
-                {currentItem ? 'Edit' : 'Create'} {editingType === 'section' ? 'Section' : 'Sub Item'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="p-6">
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
-                  <input
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-3 py-2 border rounded bg-gray-800 text-white"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    className="w-full px-3 py-2 border rounded bg-gray-800 text-white"
-                    rows={3}
-                    required
-                  />
-                </div>
+        if (isSection(currentItem)) {
+          await handleUpdateSection(currentItem.id, sectionData);
+        } else {
+          await handleCreateSection(sectionData);
+        }
+      } else {
+        if (!currentSectionId) {
+          throw new Error('No section ID provided for sub-item');
+        }
 
-                {editingType === 'subitem' && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Media</label>
-                    <MediaUpload
-                      mediaItems={formData.media_items || []}
-                      onMediaChange={(items) => setFormData(prev => ({ ...prev, media_items: items }))}
-                      maxFiles={10}
-                    />
-                  </div>
-                )}
+        const subItemData = {
+          title: formData.title,
+          description: formData.description,
+          order_index: formData.order_index || (subItems[currentSectionId]?.length || 0),
+          media_items: formData.media_items || [],
+          section_id: currentSectionId,
+          content: [], 
+          type: 'gallery' as const,
+          media_urls: formData.media_items?.map((item: MediaItem) => item.url) || [],
+          media_types: formData.media_items?.map((item: MediaItem) => item.type) || []
+        };
 
-                {editingType === 'section' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Icon</label>
-                      <input
-                        value={formData.icon || ''}
-                        onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
-                        className="w-full px-3 py-2 border rounded bg-gray-800 text-white"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Color</label>
-                      <input
-                        type="color"
-                        value={formData.color || '#000000'}
-                        onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-                        className="w-full"
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div className="flex justify-end gap-2 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setIsDialogOpen(false)}
-                    className="px-4 py-2 border rounded hover:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </DialogContent>
-        </Dialog>
+        if (isSubItem(currentItem)) {
+          await handleUpdateSubItem(currentItem.id, subItemData);
+        } else {
+          await handleCreateSubItem(currentSectionId, subItemData);
+        }
+      }
+      
+      await fetchSectionsAndSubItems();
+    } catch (err) {
+      handleError(err);
+      throw err; // Rethrow so SectionEditor can handle it
+    }
+  }}
+  initialData={currentItem}
+  type={editingType}
+  sectionId={currentSectionId || undefined}
+/>
       </div>
     </>
   );
