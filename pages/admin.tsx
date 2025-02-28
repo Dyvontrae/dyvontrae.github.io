@@ -146,13 +146,19 @@ export default function AdminPanel() {
       if (sectionsError) throw sectionsError;
       setSections(sectionsData || []);
   
-      // Fetch subitems with explicit selection of media_items
+      // Fetch subitems with explicit selection of only columns that exist
       const subItemsMap: Record<string, SubItem[]> = {};
       for (const section of sectionsData || []) {
         const { data: subItemsData, error: subItemsError } = await supabase
           .from('sub_items')
           .select(`
-            *,
+            id,
+            section_id,
+            title,
+            description,
+            media_urls,
+            media_types,
+            order_index,
             media_items
           `)
           .eq('section_id', section.id)
@@ -176,13 +182,18 @@ export default function AdminPanel() {
       const { data, error } = await supabase
         .from('sections')
         .insert([newSection])
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      setSections([...sections, data]);
-      setSubItems({ ...subItems, [data.id]: [] });
-      return data;
+      
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from section creation');
+      }
+
+      const createdSection = data[0];
+      setSections([...sections, createdSection]);
+      setSubItems({ ...subItems, [createdSection.id]: [] });
+      return createdSection;
     } catch (err) {
       handleError(err);
       return null;
@@ -195,37 +206,53 @@ export default function AdminPanel() {
         .from('sections')
         .update(updates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      setSections(sections.map(section => section.id === id ? data : section));
-      return data;
+      
+      if (!data || data.length === 0) {
+        throw new Error(`Section with ID ${id} not found`);
+      }
+
+      const updatedSection = data[0];
+      setSections(sections.map(section => section.id === id ? updatedSection : section));
+      return updatedSection;
     } catch (err) {
       handleError(err);
       return null;
     }
   }
 
-  async function handleCreateSubItem(sectionId: string, newSubItem: Omit<SubItem, 'id'>) {
+  async function handleCreateSubItem(sectionId: string, newSubItem: Partial<SubItem>) {
     try {
+      // Only include fields that exist in the database
       const subItemData = {
-        ...newSubItem,
-        section_id: sectionId
+        title: newSubItem.title,
+        description: newSubItem.description,
+        order_index: newSubItem.order_index,
+        media_items: newSubItem.media_items || [],
+        section_id: sectionId,
+        media_urls: newSubItem.media_urls || [],
+        media_types: newSubItem.media_types || []
       };
 
       const { data, error } = await supabase
         .from('sub_items')
         .insert([subItemData])
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from sub-item creation');
+      }
+
+      const createdSubItem = data[0];
       setSubItems({
         ...subItems,
-        [sectionId]: [...(subItems[sectionId] || []), data]
+        [sectionId]: [...(subItems[sectionId] || []), createdSubItem]
       });
-      return data;
+      return createdSubItem;
     } catch (err) {
       handleError(err);
       return null;
@@ -234,21 +261,39 @@ export default function AdminPanel() {
 
   async function handleUpdateSubItem(id: string, updates: Partial<SubItem>) {
     try {
+      // Only include fields that exist in the database
+      const dbUpdates = {
+        title: updates.title,
+        description: updates.description,
+        order_index: updates.order_index,
+        media_items: updates.media_items,
+        media_urls: updates.media_urls,
+        media_types: updates.media_types
+      };
+
       const { data, error } = await supabase
         .from('sub_items')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
       
-      const sectionId = data.section_id;
+      if (!data || data.length === 0) {
+        throw new Error(`Sub item with ID ${id} not found`);
+      }
+
+      const updatedSubItem = data[0];
+      const sectionId = updatedSubItem.section_id;
+      
       setSubItems({
         ...subItems,
-        [sectionId]: subItems[sectionId].map(item => item.id === id ? data : item)
+        [sectionId]: subItems[sectionId].map(item => 
+          item.id === id ? updatedSubItem : item
+        )
       });
-      return data;
+      
+      return updatedSubItem;
     } catch (err) {
       handleError(err);
       return null;
@@ -318,10 +363,8 @@ export default function AdminPanel() {
           order_index: formData.order_index || (subItems[currentSectionId]?.length || 0),
           media_items: formData.media_items || [],
           section_id: currentSectionId,
-          content: [], // Required by SubItem interface
-          type: 'gallery' as const, // Default to gallery
-          media_urls: formData.media_items?.map(item => item.url) || [], // Convert media_items to urls
-          media_types: formData.media_items?.map(item => item.type) || [] // Convert media_items to types
+          media_urls: formData.media_items?.map((item: MediaItem) => item.url) || [],
+          media_types: formData.media_items?.map((item: MediaItem) => item.type) || []
         };
 
         if (isSubItem(currentItem)) {
@@ -437,64 +480,65 @@ export default function AdminPanel() {
         ) : (
           <ContactManager />
         )}
-<SectionEditor
-  open={isDialogOpen}
-  onOpenChange={(open) => {
-    setIsDialogOpen(open);
-    if (!open) {
-      setCurrentItem(null);
-      setCurrentSectionId(null);
-      resetForm();
-    }
-  }}
-  onSave={async (formData) => {
-    try {
-      if (editingType === 'section') {
-        const sectionData = {
-          title: formData.title,
-          description: formData.description,
-          icon: formData.icon || '',
-          color: formData.color || '#000000',
-          order_index: formData.order_index || sections.length
-        };
+        
+        <SectionEditor
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setCurrentItem(null);
+              setCurrentSectionId(null);
+              resetForm();
+            }
+          }}
+          onSave={async (formData) => {
+            try {
+              if (editingType === 'section') {
+                const sectionData = {
+                  title: formData.title,
+                  description: formData.description,
+                  icon: formData.icon || '',
+                  color: formData.color || '#000000',
+                  order_index: formData.order_index || sections.length
+                };
 
-        if (isSection(currentItem)) {
-          await handleUpdateSection(currentItem.id, sectionData);
-        } else {
-          await handleCreateSection(sectionData);
-        }
-      } else {
-        if (!currentSectionId) {
-          throw new Error('No section ID provided for sub-item');
-        }
+                if (isSection(currentItem)) {
+                  await handleUpdateSection(currentItem.id, sectionData);
+                } else {
+                  await handleCreateSection(sectionData);
+                }
+              } else {
+                if (!currentSectionId) {
+                  throw new Error('No section ID provided for sub-item');
+                }
 
-        const subItemData = {
-          title: formData.title,
-          description: formData.description,
-          order_index: formData.order_index || (subItems[currentSectionId]?.length || 0),
-          media_items: formData.media_items || [],
-          section_id: currentSectionId,
-          media_urls: formData.media_items?.map((item: MediaItem) => item.url) || [],
-          media_types: formData.media_items?.map((item: MediaItem) => item.type) || []
-        };
+                const subItemData = {
+                  title: formData.title,
+                  description: formData.description,
+                  order_index: formData.order_index || (subItems[currentSectionId]?.length || 0),
+                  media_items: formData.media_items || [],
+                  section_id: currentSectionId,
+                  media_urls: formData.media_items?.map((item: MediaItem) => item.url) || [],
+                  media_types: formData.media_items?.map((item: MediaItem) => item.type) || []
+                };
 
-        if (isSubItem(currentItem)) {
-          await handleUpdateSubItem(currentItem.id, subItemData);
-        } else {
-          await handleCreateSubItem(currentSectionId, subItemData);
-        }
-      }
-      
-      await fetchSectionsAndSubItems();
-    } catch (err) {
-      handleError(err);
-      throw err; // Rethrow so SectionEditor can handle it
-    }
-  }}
-  initialData={currentItem}
-  type={editingType}
-  sectionId={currentSectionId || undefined}
-/>
+                if (isSubItem(currentItem)) {
+                  await handleUpdateSubItem(currentItem.id, subItemData);
+                } else {
+                  await handleCreateSubItem(currentSectionId, subItemData);
+                }
+              }
+              
+              await fetchSectionsAndSubItems();
+            } catch (err) {
+              handleError(err);
+              throw err; // Rethrow so SectionEditor can handle it
+            }
+          }}
+          initialData={currentItem}
+          type={editingType}
+          sectionId={currentSectionId || undefined}
+        />
       </div>
     </>
   );
